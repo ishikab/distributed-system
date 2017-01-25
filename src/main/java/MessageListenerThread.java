@@ -1,7 +1,6 @@
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Executable;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -12,16 +11,18 @@ import java.net.Socket;
 public class MessageListenerThread extends Thread {
     private ServerSocket serverSocket;
     Integer port;
-    MessageListenerThread(Integer port){
+
+    MessageListenerThread(Integer port) {
         this.port = port;
     }
+
     @Override
     public void run() {
         try {
             serverSocket = new ServerSocket(this.port);
-            while(true) {
+            while (true) {
                 Socket socket = serverSocket.accept();
-                Message message = (Message)new ObjectInputStream(new BufferedInputStream(socket.getInputStream())).readObject();
+                Message message = (Message) new ObjectInputStream(new BufferedInputStream(socket.getInputStream())).readObject();
                 LogUtil.log(message);
             }
         } catch (IOException e) {

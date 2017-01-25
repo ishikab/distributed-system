@@ -6,22 +6,62 @@ import java.io.Serializable;
  * Created by chenxiw on 1/23/17.
  * chenxi.wang@sv.cmu.edu
  */
-public class Message implements Serializable {
-    String src = null, dest = null, kind = null, data = null;
+public class Message implements Serializable, Cloneable {
+    private String src = null, dest = null, kind = null;
+    private Object data = null;
+    private Integer seqNum = -1;
+    private Boolean isDuplicate = false;
     public Message(String dest, String kind, Object data) {
+        this.dest = dest;
+        this.kind = kind;
+        this.data = data;
+    }
 
+    public String getSrc() {
+        return src;
+    }
+
+    public void setSrc(String src) {
+        this.src = src;
+    }
+
+    public String getDest() {
+        return dest;
+    }
+
+    public void setDest(String dest) {
+        this.dest = dest;
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 
     @Override
     public String toString() {
         return "Message{" +
-                "dest='" + dest + '\'' +
+                "src='" + src + '\'' +
+                ", dest='" + dest + '\'' +
                 ", kind='" + kind + '\'' +
-                ", data='" + data + '\'' +
+                ", data=" + data +
+                ", seqNum=" + seqNum +
+                ", isDuplicate=" + isDuplicate +
                 '}';
     }
 
-    public Message(BufferedReader br) {
+    public Message(String source, Integer seqNum, BufferedReader br) {
         try {
             System.out.print("destination: ");
             this.dest = br.readLine();
@@ -35,16 +75,56 @@ public class Message implements Serializable {
         }
     }
 
-    // These settors are used by MessagePasser.send( ), not your app
-    public void set_source(String source){
+    protected Message clone() {
+        Message message = null;
+        try {
+            message = (Message) super.clone();
+            message.isDuplicate = true;
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return message;
+    }
+
+    //    public Message(Message message) {
+//        this.src = message.getSrc();
+//        this.seqNum = message.seqNum;
+//
+//    }
+    public void setSource(String source) {
         this.src = source;
     }
-    public void set_seqNum(int sequenceNumber){
 
-
+    /**
+     * simple wrapper of well-named method
+     *
+     * @param source
+     */
+    public void set_source(String source) {
+        setSource(source);
     }
-    public void set_duplicate(Boolean dupe){
 
+    public Integer getSeqNum() {
+        return seqNum;
     }
-    // other accessors, toString, etc as needed
+
+    public void setSeqNum(Integer seqNum) {
+        this.seqNum = seqNum;
+    }
+
+    public Boolean getDuplicate() {
+        return isDuplicate;
+    }
+
+    public void setDuplicate(Boolean duplicate) {
+        isDuplicate = duplicate;
+    }
+
+    public void set_seqNum(int sequenceNumber) {
+        this.seqNum = sequenceNumber;
+    }
+
+    public void set_duplicate(Boolean dupe) {
+        this.isDuplicate = dupe;
+    }
 }

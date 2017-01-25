@@ -1,8 +1,8 @@
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +23,31 @@ class MessagePasser {
     private ConcurrentHashMap<String, Node> nodeHashMap;
     private LinkedBlockingQueue<Rule> sendRulesQueue;
     private LinkedBlockingQueue<Rule> receiveRulesQueue;
+    private MessageListenerThread listenerThread;
+
+    public String getLocalName() {
+        return localName;
+    }
+
+    public void setLocalName(String localName) {
+        this.localName = localName;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
 
     @SuppressWarnings("unchecked")
     MessagePasser(String configurationFilename, String localName) {
@@ -45,7 +70,7 @@ class MessagePasser {
                         }
                     }
                 }
-            } else LogUtil.logFatalErr("Configuration section not found");
+            } else LogUtil.logFatalErr("configuration section not found");
             LogUtil.log(String.format("ip: %s:%s", this.ip, this.port));
             ArrayList<LinkedHashMap<String, Object>> sendRulesConfig = dataMap.getOrDefault("sendRules", null);
             if (sendRulesConfig != null) {
@@ -56,13 +81,30 @@ class MessagePasser {
                 this.receiveRulesQueue.addAll(receiveRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
             }
         }
-        LogUtil.log("Load Finished.");
         checkNodeInfo();
-        new MessageListenerThread(this.port).start();
+        listenerThread = new MessageListenerThread(this.port);
+        listenerThread.start();
     }
 
     void send(Message message) {
-
+        try {
+            LogUtil.log("sending message: " + message);
+            Node destNode = this.nodeHashMap.get(message.getDest());
+            try (Socket socket = new Socket(destNode.getIp(), destNode.getPort())) {
+                try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
+                    out.writeObject(message);
+                    out.flush();
+                }
+            }
+            try (Socket socket = new Socket(destNode.getIp(), destNode.getPort())) {
+                try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
+                    out.writeObject(message.clone());
+                    out.flush();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     Message receive() {

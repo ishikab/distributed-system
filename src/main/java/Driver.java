@@ -1,9 +1,6 @@
-import org.yaml.snakeyaml.Yaml;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Created by chenxiw on 1/23/17.
@@ -11,17 +8,18 @@ import java.util.Map;
  */
 public class Driver {
     public static void main(String[] args) {
-        System.out.println("Welcome to 18-842 Distributed Systems lab 0");
+        System.out.println("welcome to 18-842 distributed systems lab 0");
         System.out.println(String.format("local_name: %s\nconfig_file: %s", args[1], args[0]));
         MessagePasser messagePasser = new MessagePasser(args[0], args[1]);
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             try {
                 Message msg;
-                System.out.print("Please input [send/receive/exit]: ");
+                System.out.print("please input [send/receive/exit]: ");
                 switch (br.readLine()) {
                     case "send":
-                        msg = new Message(br);
+                        msg = new Message(messagePasser.getLocalName(), 0, br);
+                        msg.set_source(messagePasser.getLocalName());
                         messagePasser.send(msg);
                         break;
                     case "receive":
@@ -29,7 +27,7 @@ public class Driver {
                         LogUtil.log(msg);
                         break;
                     case "exit":
-                        LogUtil.log("Hmm, okay, exiting...");
+                        LogUtil.log("thanks for using");
                         System.exit(0);
                         break;
                 }

@@ -6,11 +6,11 @@
 configuration :
   - name : alice
     ip : 192.168.0.117
-    port : 12344 # This is the incoming port on which MP will listen
+    port : 11234 # This is the incoming port on which MP will listen
 # May be ephemeral for further communication as usual
   - name : bob
-    ip : 192.168.1.112
-    port : 14255
+    ip : 192.168.0.117
+    port : 22345
   - name : charlie
     ip : 128.2.130.19
     port : 12998
