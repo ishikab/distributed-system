@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
 
 /**
  * Created by chenxiw on 1/24/17.
@@ -10,10 +11,14 @@ import java.net.Socket;
  */
 public class MessageListenerThread extends Thread {
     private ServerSocket serverSocket;
+    private MessageReceiveCallback callback;
     Integer port;
+    LinkedList<Rule> receiveRules;
 
-    MessageListenerThread(Integer port) {
+    MessageListenerThread(Integer port, LinkedList<Rule> receiveRules, MessageReceiveCallback callback) {
         this.port = port;
+        this.receiveRules = receiveRules;
+        this.callback = callback;
     }
 
     @Override
@@ -23,7 +28,7 @@ public class MessageListenerThread extends Thread {
             while (true) {
                 Socket socket = serverSocket.accept();
                 Message message = (Message) new ObjectInputStream(new BufferedInputStream(socket.getInputStream())).readObject();
-                LogUtil.log(message);
+                callback.handleMessage(message);
             }
         } catch (IOException e) {
             e.printStackTrace();

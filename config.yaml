@@ -27,6 +27,15 @@ sendRules :
     kind : Reply
     src : daphnie
     seqNum : 6
+  - action: drop
+    kind: dr
+  - action: duplicate
+    kind: du
+  - action: dropAfter
+    kind: da
+    seqNum: 3
+  - action: delay
+    kind: de
 receiveRules :
   - action : duplicate # 4th message from Charlie that anyone
     src : charlie # receives will be duplicated
@@ -37,3 +46,12 @@ receiveRules :
     duplicate : True
   - action : delay # Any message from Daphnie will be delivered only
     src : daphnie # after some other message
+  - action: drop
+    kind: rdr
+  - action: duplicate
+    kind: rdu
+  - action: dropAfter
+    kind: rda
+    seqNum: 3
+  - action: delay
+    kind: rde
