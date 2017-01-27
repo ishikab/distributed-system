@@ -7,12 +7,17 @@ import java.io.InputStreamReader;
  * chenxi.wang@sv.cmu.edu
  */
 public class Driver {
-    public static void main(String[] args) {
-        System.out.println("welcome to 18-842 distributed systems lab 0");
-        System.out.println(String.format("local_name: %s\nconfig_file: %s", args[1], args[0]));
-        MessagePasser messagePasser = new MessagePasser(args[0], args[1]);
+    public static void main(String[] args) throws IOException{
+        System.out.println("Welcome to 18-842 distributed systems lab 0");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-//        int seq = 0;
+
+        System.out.println("Please enter local name::");
+        String localName = br.readLine();
+        
+        System.out.println("Please enter the name of configuration file::");
+        String configFileName = br.readLine();
+        
+        MessagePasser messagePasser = new MessagePasser(configFileName, localName);
         while (true) {
             try {
                 Message msg;
@@ -24,11 +29,11 @@ public class Driver {
                         break;
                     case "receive":
                         msg = messagePasser.receive();
-                        if (msg == null) LogUtil.log("no new message");
+                        if (msg == null) LogUtil.log("No new message");
                         else LogUtil.log(msg);
                         break;
                     case "exit":
-                        LogUtil.log("thanks for using");
+                        LogUtil.log("Thanks for using");
                         System.exit(0);
                         break;
                 }
@@ -38,6 +43,4 @@ public class Driver {
             }
         }
     }
-
-
 }
