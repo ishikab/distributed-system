@@ -16,8 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
- * Created by chenxiw on 1/23/17.
+ * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
+ * ibatra@andrew.cmu.edu
  */
 class MessagePasser implements MessageReceiveCallback {
     private String configurationFileName;
@@ -176,6 +177,7 @@ class MessagePasser implements MessageReceiveCallback {
                 return;
             }
         }
+        this.receiveMessagesQueue.add(message);
     }
 
     Message receive() {
