@@ -2,10 +2,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-/**
- * Created by chenxiw on 1/23/17.
+/*
+ * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
+ * ibatra@andrew.cmu.edu
  */
+
 public class Driver {
     public static void main(String[] args) throws IOException{
         System.out.println("Welcome to 18-842 distributed systems lab 0");
