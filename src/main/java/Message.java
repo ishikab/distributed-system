@@ -2,10 +2,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 
-/**
- * Created by chenxiw on 1/23/17.
+/*
+ * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
+ * ibatra@andrew.cmu.edu
  */
+
 public class Message implements Serializable, Cloneable {
     private String src = null, dest = null, kind = null;
     private Object data = null;
