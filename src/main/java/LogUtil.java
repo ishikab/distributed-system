@@ -1,7 +1,9 @@
-/**
- * Created by chenxiw on 1/23/17.
+/*
+ * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
+ * ibatra@andrew.cmu.edu
  */
+
 public class LogUtil {
     public static void log(String message){
         System.out.println("[INFO] " + message);
