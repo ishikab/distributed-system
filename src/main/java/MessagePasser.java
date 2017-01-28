@@ -32,7 +32,7 @@ class MessagePasser implements MessageReceiveCallback {
     private LinkedBlockingQueue<Message> sendDelayMessageQueue = new LinkedBlockingQueue<>();
     private LinkedBlockingQueue<Message> receiveMessagesQueue = new LinkedBlockingQueue<>();
     private LinkedBlockingQueue<Message> receiveDelayMessageQueue = new LinkedBlockingQueue<>();
-    private AtomicInteger seqNum = new AtomicInteger(0);
+    private ConcurrentHashMap<String, AtomicInteger> seqNumMap = new ConcurrentHashMap<>();
     private MessageListenerThread listenerThread;
 
     public String getLocalName() {
@@ -63,7 +63,7 @@ class MessagePasser implements MessageReceiveCallback {
     MessagePasser(String configurationFilename, String localName) {
         this.configurationFileName = configurationFilename;
         this.localName = localName;
-        this.seqNum = new AtomicInteger(0);
+        //this.seqNum = new AtomicInteger(0);
         HashMap<String, ArrayList> dataMap = readConfiguration(configurationFilename);
         if (dataMap != null) {
             ArrayList<LinkedHashMap<String, Object>> nodeConfig = dataMap.getOrDefault("configuration", null);
@@ -97,7 +97,8 @@ class MessagePasser implements MessageReceiveCallback {
     void send(Message message) {
         boolean duplicateMessage = false;
         try {
-            message.setSeqNum(seqNum.getAndAdd(1));
+            seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
+            message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
             for (Rule rule : sendRules) {
                 if (rule.matches(message)) {
                     LogUtil.log("found match: " + rule);
