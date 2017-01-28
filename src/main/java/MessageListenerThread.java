@@ -5,10 +5,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
-/**
- * Created by chenxiw on 1/24/17.
+/*
+ * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
+ * ibatra@andrew.cmu.edu
  */
+
 public class MessageListenerThread extends Thread {
     private ServerSocket serverSocket;
     private MessageReceiveCallback callback;
