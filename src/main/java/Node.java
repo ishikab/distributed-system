@@ -1,9 +1,11 @@
 import java.util.LinkedHashMap;
 
-/**
- * Created by chenxiw on 1/24/17.
+/*
+ * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
+ * ibatra@andrew.cmu.edu
  */
+
 class Node {
     private String name;
     private String ip;
