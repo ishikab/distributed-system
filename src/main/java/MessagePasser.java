@@ -151,7 +151,7 @@ class MessagePasser implements MessageReceiveCallback {
 
     @Override
     public void handleMessage(Message message) {
-        LogUtil.log(message);
+        //LogUtil.log(message);
         for (Rule rule : this.receiveRules) {
             if (rule.matches(message)) {
                 LogUtil.log("found rule match: " + rule);
