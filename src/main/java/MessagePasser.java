@@ -160,7 +160,7 @@ class MessagePasser implements MessageReceiveCallback {
                     case DROP:
                         break;
                     case DROP_AFTER:
-                        if (message.getSeqNum() <= rule.seqNum)
+                        if (message.getSeqNum() < rule.seqNum)
                             this.receiveMessagesQueue.add(message);
                         break;
                     case DUPLICATE:

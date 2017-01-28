@@ -2,8 +2,9 @@ import java.util.LinkedHashMap;
 import java.util.Objects;
 
 /**
- * Created by chenxiw on 1/24/17.
+ * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
+ * ibatra@andrew.cmu.edu
  */
 class Rule {
     enum Action {
@@ -58,7 +59,7 @@ class Rule {
             if (!kind.equals(message.getKind())) return false;
         }
         if (this.seqNum >= 0) {
-            if (!Objects.equals(seqNum, message.getSeqNum())) return false;
+            if (seqNum >  message.getSeqNum()) return false;
         }
         return true;
     }
