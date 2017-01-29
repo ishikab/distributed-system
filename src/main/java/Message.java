@@ -19,9 +19,24 @@ public class Message implements Serializable, Cloneable {
         this.data = data;
     }
 
+    public Message(String source, BufferedReader br) {
+        try {
+            this.src = source;
+            System.out.print("destination: ");
+            this.dest = br.readLine();
+            System.out.print("kind: ");
+            this.kind = br.readLine();
+            System.out.print("message: ");
+            this.data = br.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public Boolean isDuplicate() {
         return isDuplicate;
     }
+
     public String getSrc() {
         return src;
     }
@@ -64,20 +79,6 @@ public class Message implements Serializable, Cloneable {
                 ", seqNum=" + seqNum +
                 ", isDuplicate=" + isDuplicate +
                 '}';
-    }
-
-    public Message(String source, BufferedReader br) {
-        try {
-            this.src = source;
-            System.out.print("destination: ");
-            this.dest = br.readLine();
-            System.out.print("kind: ");
-            this.kind = br.readLine();
-            System.out.print("message: ");
-            this.data = br.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     protected Message clone() {

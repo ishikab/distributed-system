@@ -8,6 +8,9 @@ import java.io.InputStreamReader;
  * ibatra@andrew.cmu.edu
  */
 
+/**
+ * user interface for demo
+ */
 public class Driver {
     public static void main(String[] args) throws IOException{
         System.out.println("Welcome to 18-842 distributed systems lab 0");
@@ -18,21 +21,22 @@ public class Driver {
         
         System.out.println("Please enter the name of configuration file::");
         String configFileName = br.readLine();
+        if (configFileName.equals("")) configFileName = "config.yaml";
         
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
         while (true) {
             try {
-                Message msg;
+                Message message;
                 System.out.print("please input [send/receive/exit]: ");
                 switch (br.readLine()) {
                     case "send":
-                        msg = new Message(messagePasser.getLocalName(), br);
-                        messagePasser.send(msg);
+                        message = new Message(messagePasser.getLocalName(), br);
+                        messagePasser.send(message);
                         break;
                     case "receive":
-                        msg = messagePasser.receive();
-                        if (msg == null) LogUtil.log("No new message");
-                        else LogUtil.log(msg);
+                        message = messagePasser.receive();
+                        if (message == null) LogUtil.log("No new message");
+                        else LogUtil.log(message);
                         break;
                     case "exit":
                         LogUtil.log("Thanks for using");

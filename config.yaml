@@ -6,17 +6,17 @@
 configuration :
   - name : alice
     ip : 192.168.0.117
-    port : 11234 # This is the incoming port on which MP will listen
+    port : 60000 # This is the incoming port on which MP will listen
 # May be ephemeral for further communication as usual
   - name : bob
     ip : 192.168.0.117
-    port : 22345
+    port : 60001
   - name : charlie
-    ip : 128.2.130.19
-    port : 12998
+    ip : 172.31.14.183
+    port : 60002
   - name : daphnie
-    ip : 192.168.1.87
-    port : 1987
+    ip : 172.31.14.183
+    port : 60003
 sendRules :
   - action : drop # Ack message number 4 from bob to alice will not be sent
     src : bob
@@ -36,6 +36,8 @@ sendRules :
     seqNum: 3
   - action: delay
     kind: de
+  - action: duplicate
+    kind: rdd
 receiveRules :
   - action : duplicate # 4th message from Charlie that anyone
     src : charlie # receives will be duplicated
@@ -55,3 +57,6 @@ receiveRules :
     seqNum: 3
   - action: delay
     kind: rde
+  - action: duplicate
+    kind: rdd
+    duplicate: true

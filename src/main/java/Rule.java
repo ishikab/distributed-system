@@ -1,5 +1,4 @@
 import java.util.LinkedHashMap;
-import java.util.Objects;
 
 /**
  * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
@@ -7,34 +6,19 @@ import java.util.Objects;
  * ibatra@andrew.cmu.edu
  */
 class Rule {
-    enum Action {
-        DROP, DROP_AFTER, DUPLICATE, DELAY, NONE
-    }
-
-    private String src = null, dest = null, kind = null;
     Integer seqNum = -1;
     Action action = Action.NONE;
+    private String src = null, dest = null, kind = null;
     private Boolean isDuplicate = false;
-    @Override
-    public String toString() {
-        return "Rule{" +
-                "src='" + src + '\'' +
-                ", dest='" + dest + '\'' +
-                ", kind='" + kind + '\'' +
-                ", seqNum=" + seqNum +
-                ", action=" + action +
-                '}';
-    }
-
     Rule(LinkedHashMap<String, Object> data) {
-        if(data.containsKey("src")) this.src = (String) data.get("src");
-        if(data.containsKey("dest")) this.dest = (String) data.get("dest");
-        if(data.containsKey("kind")) this.kind = (String) data.get("kind");
+        if (data.containsKey("src")) this.src = (String) data.get("src");
+        if (data.containsKey("dest")) this.dest = (String) data.get("dest");
+        if (data.containsKey("kind")) this.kind = (String) data.get("kind");
         if (data.containsKey("seqNum")) this.seqNum = (Integer) data.get("seqNum");
         if ((data.containsKey("duplicate")) && (boolean) data.get("duplicate"))
             this.isDuplicate = true;
 
-        switch ((String)data.get("action")) {
+        switch ((String) data.get("action")) {
             case "drop":
                 this.action = Action.DROP;
                 break;
@@ -50,10 +34,21 @@ class Rule {
         }
     }
 
-    public boolean isDuplicate()
-    {
-      return isDuplicate;
+    @Override
+    public String toString() {
+        return "Rule{" +
+                "src='" + src + '\'' +
+                ", dest='" + dest + '\'' +
+                ", kind='" + kind + '\'' +
+                ", seqNum=" + seqNum +
+                ", action=" + action +
+                '}';
     }
+
+    public boolean isDuplicate() {
+        return isDuplicate;
+    }
+
     public boolean matches(Message message) {
         if (this.src != null) {
             if (!src.equals(message.getSrc())) return false;
@@ -65,8 +60,15 @@ class Rule {
             if (!kind.equals(message.getKind())) return false;
         }
         if (this.seqNum >= 0) {
-            if (seqNum >  message.getSeqNum()) return false;
+            if (seqNum > message.getSeqNum()) return false;
+        }
+        if (this.isDuplicate) {
+            if (!message.isDuplicate()) return false;
         }
         return true;
+    }
+
+    enum Action {
+        DROP, DROP_AFTER, DUPLICATE, DELAY, NONE
     }
 }

@@ -12,10 +12,10 @@ import java.util.LinkedList;
  */
 
 public class MessageListenerThread extends Thread {
-    private ServerSocket serverSocket;
-    private MessageReceiveCallback callback;
     Integer port;
     LinkedList<Rule> receiveRules;
+    private ServerSocket serverSocket;
+    private MessageReceiveCallback callback;
 
     MessageListenerThread(Integer port, LinkedList<Rule> receiveRules, MessageReceiveCallback callback) {
         this.port = port;

@@ -26,13 +26,12 @@ class MessagePasser implements MessageReceiveCallback {
     private String ip;
     private Integer port;
     private final ConcurrentHashMap<String, Node> nodeHashMap = new ConcurrentHashMap<>();
-    private LinkedList<Rule> sendRules = new LinkedList<>();
-    private LinkedList<Rule> receiveRules = new LinkedList<>();
-    private LinkedBlockingQueue<Message> sendMessageQueue = new LinkedBlockingQueue<>();
-    private LinkedBlockingQueue<Message> sendDelayMessageQueue = new LinkedBlockingQueue<>();
-    private LinkedBlockingQueue<Message> receiveMessagesQueue = new LinkedBlockingQueue<>();
-    private LinkedBlockingQueue<Message> receiveDelayMessageQueue = new LinkedBlockingQueue<>();
-    private ConcurrentHashMap<String, AtomicInteger> seqNumMap = new ConcurrentHashMap<>();
+    private final LinkedList<Rule> sendRules = new LinkedList<>();
+    private final LinkedList<Rule> receiveRules = new LinkedList<>();
+    private final LinkedBlockingQueue<Message> sendDelayMessageQueue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<Message> receiveMessagesQueue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<Message> receiveDelayMessageQueue = new LinkedBlockingQueue<>();
+    private final ConcurrentHashMap<String, AtomicInteger> seqNumMap = new ConcurrentHashMap<>();
     private MessageListenerThread listenerThread;
 
     public String getLocalName() {
@@ -155,50 +154,19 @@ class MessagePasser implements MessageReceiveCallback {
                 LogUtil.log(String.format("[%s] %s", rule.action, message));
                 switch (rule.action) {
                     case DROP:
-                        if (rule.isDuplicate()) {
-                          if (!message.isDuplicate())
-                            this.receiveMessagesQueue.add(message);
-                        }
                         break;
                     case DROP_AFTER:
-                        if (rule.isDuplicate() == false) {
-                          if (message.getSeqNum() < rule.seqNum)
-                              this.receiveMessagesQueue.add(message);
-                        }
-                        else {
-                          if (message.isDuplicate()) {
-                            if (message.getSeqNum() < rule.seqNum)
-                              this.receiveMessagesQueue.add(message);
-                          }
-                          else {
+                        if (message.getSeqNum() < rule.seqNum)
                             this.receiveMessagesQueue.add(message);
-                          }
-                        }
+
                         break;
                     case DUPLICATE:
-                        if (rule.isDuplicate() == false) {
-                          this.receiveMessagesQueue.add(message);
-                          this.receiveMessagesQueue.add(message.clone());
-                        }
-                        else {
-                          if (message.isDuplicate()) {
-                            this.receiveMessagesQueue.add(message);
-                            this.receiveMessagesQueue.add(message.clone());
-                          }
-                        }
+                        this.receiveMessagesQueue.add(message);
+                        this.receiveMessagesQueue.add(message.clone());
+
                         break;
                     case DELAY:
-                        if (rule.isDuplicate() == false) {
-                          this.receiveDelayMessageQueue.add(message); 
-                        }
-                        else {
-                          if (message.isDuplicate()) {
-                            this.receiveDelayMessageQueue.add(message); 
-                          }
-                          else {
-                             this.receiveMessagesQueue.add(message);
-                          }
-                        }
+                        this.receiveDelayMessageQueue.add(message);
                         break;
                 }
                 return;
