@@ -33,7 +33,7 @@ class Rule {
         if (data.containsKey("seqNum")) this.seqNum = (Integer) data.get("seqNum");
         switch ((String)data.get("action")) {
             case "drop":
-                if ((Boolean)data.getOrDefault("duplicate", false)) this.action = Action.DROP_DUPLICATE;
+                if ((Boolean)data.getOrDefault("duplicate", true)) this.action = Action.DROP_DUPLICATE;
                 else this.action = Action.DROP;
                 break;
             case "duplicate":
