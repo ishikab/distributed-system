@@ -116,10 +116,6 @@ class MessagePasser implements MessageReceiveCallback {
                         case DELAY:
                             this.sendDelayMessageQueue.add(message);
                             return;
-                        case DROP_DUPLICATE:
-                            if (message.isDuplicate())
-                                return;
-                            break;
                     }
                     break;
                 }
@@ -159,21 +155,51 @@ class MessagePasser implements MessageReceiveCallback {
                 LogUtil.log(String.format("[%s] %s", rule.action, message));
                 switch (rule.action) {
                     case DROP:
+                        if (rule.isDuplicate()) {
+                          if (!message.isDuplicate())
+                            this.receiveMessagesQueue.add(message);
+                        }
                         break;
                     case DROP_AFTER:
-                        if (message.getSeqNum() < rule.seqNum)
+                        if (rule.isDuplicate() == false) {
+                          if (message.getSeqNum() < rule.seqNum)
+                              this.receiveMessagesQueue.add(message);
+                        }
+                        else {
+                          if (message.isDuplicate()) {
+                            if (message.getSeqNum() < rule.seqNum)
+                              this.receiveMessagesQueue.add(message);
+                          }
+                          else {
                             this.receiveMessagesQueue.add(message);
+                          }
+                        }
                         break;
                     case DUPLICATE:
-                        this.receiveMessagesQueue.add(message);
-                        this.receiveMessagesQueue.add(message.clone());
+                        if (rule.isDuplicate() == false) {
+                          this.receiveMessagesQueue.add(message);
+                          this.receiveMessagesQueue.add(message.clone());
+                        }
+                        else {
+                          if (message.isDuplicate()) {
+                            this.receiveMessagesQueue.add(message);
+                            this.receiveMessagesQueue.add(message.clone());
+                          }
+                        }
                         break;
                     case DELAY:
-                        this.receiveDelayMessageQueue.add(message);
+                        if (rule.isDuplicate() == false) {
+                          this.receiveDelayMessageQueue.add(message); 
+                        }
+                        else {
+                          if (message.isDuplicate()) {
+                            this.receiveDelayMessageQueue.add(message); 
+                          }
+                          else {
+                             this.receiveMessagesQueue.add(message);
+                          }
+                        }
                         break;
-                    case DROP_DUPLICATE:
-                        if (!message.isDuplicate())
-                            this.receiveMessagesQueue.add(message);
                 }
                 return;
             }

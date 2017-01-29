@@ -8,13 +8,13 @@ import java.util.Objects;
  */
 class Rule {
     enum Action {
-        DROP, DROP_AFTER, DUPLICATE, DELAY, DROP_DUPLICATE, NONE
+        DROP, DROP_AFTER, DUPLICATE, DELAY, NONE
     }
 
     private String src = null, dest = null, kind = null;
     Integer seqNum = -1;
     Action action = Action.NONE;
-
+    private Boolean isDuplicate = false;
     @Override
     public String toString() {
         return "Rule{" +
@@ -31,10 +31,12 @@ class Rule {
         if(data.containsKey("dest")) this.dest = (String) data.get("dest");
         if(data.containsKey("kind")) this.kind = (String) data.get("kind");
         if (data.containsKey("seqNum")) this.seqNum = (Integer) data.get("seqNum");
+        if ((data.containsKey("duplicate")) && (boolean) data.get("duplicate"))
+            this.isDuplicate = true;
+
         switch ((String)data.get("action")) {
             case "drop":
-                if ((Boolean)data.getOrDefault("duplicate", true)) this.action = Action.DROP_DUPLICATE;
-                else this.action = Action.DROP;
+                this.action = Action.DROP;
                 break;
             case "duplicate":
                 this.action = Action.DUPLICATE;
@@ -48,6 +50,10 @@ class Rule {
         }
     }
 
+    public boolean isDuplicate()
+    {
+      return isDuplicate;
+    }
     public boolean matches(Message message) {
         if (this.src != null) {
             if (!src.equals(message.getSrc())) return false;
