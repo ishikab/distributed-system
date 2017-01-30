@@ -41,31 +41,7 @@ class MessagePasser implements MessageReceiveCallback {
         this.configurationFileName = configurationFilename;
         this.localName = localName;
         //this.seqNum = new AtomicInteger(0);
-        HashMap<String, ArrayList> dataMap = readConfiguration(configurationFilename);
-        if (dataMap != null) {
-            ArrayList<LinkedHashMap<String, Object>> nodeConfig = dataMap.getOrDefault("configuration", null);
-            if (nodeConfig != null) {
-                for (LinkedHashMap map : nodeConfig) {
-                    String nodeName = (String) map.get("name");
-                    if (nodeName != null) {
-                        this.nodeHashMap.put(nodeName, new Node(map));
-                        if (nodeName.equals(localName)) {
-                            this.IP = (String) map.get("IP");
-                            this.port = (Integer) map.get("port");
-                        }
-                    }
-                }
-            } else LogUtil.logFatalErr("configuration section not found");
-            LogUtil.logInfo(String.format("[%s] %s:%s", this.localName, this.IP, this.port));
-            ArrayList<LinkedHashMap<String, Object>> sendRulesConfig = dataMap.getOrDefault("sendRules", null);
-            if (sendRulesConfig != null) {
-                this.sendRules.addAll(sendRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
-            }
-            ArrayList<LinkedHashMap<String, Object>> receiveRulesConfig = dataMap.getOrDefault("receiveRules", null);
-            if (receiveRulesConfig != null) {
-                this.receiveRules.addAll(receiveRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
-            }
-        }
+        updateConfiguration();
         checkNodeInfo();
         listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
@@ -230,6 +206,37 @@ class MessagePasser implements MessageReceiveCallback {
     void listNodes() {
         LogUtil.logIterable("Nodes Info:", this.nodeHashMap.values());
 
+    }
+
+    void updateConfiguration() {
+        this.nodeHashMap.clear();
+        this.sendRules.clear();
+        this.receiveRules.clear();
+        HashMap<String, ArrayList> dataMap = readConfiguration(this.configurationFileName);
+        if (dataMap != null) {
+            ArrayList<LinkedHashMap<String, Object>> nodeConfig = dataMap.getOrDefault("configuration", null);
+            if (nodeConfig != null) {
+                for (LinkedHashMap map : nodeConfig) {
+                    String nodeName = (String) map.get("name");
+                    if (nodeName != null) {
+                        this.nodeHashMap.put(nodeName, new Node(map));
+                        if (nodeName.equals(localName)) {
+                            this.IP = (String) map.get("IP");
+                            this.port = (Integer) map.get("port");
+                        }
+                    }
+                }
+            } else LogUtil.logFatalErr("configuration section not found");
+            LogUtil.logInfo(String.format("[%s] %s:%s", this.localName, this.IP, this.port));
+            ArrayList<LinkedHashMap<String, Object>> sendRulesConfig = dataMap.getOrDefault("sendRules", null);
+            if (sendRulesConfig != null) {
+                this.sendRules.addAll(sendRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
+            }
+            ArrayList<LinkedHashMap<String, Object>> receiveRulesConfig = dataMap.getOrDefault("receiveRules", null);
+            if (receiveRulesConfig != null) {
+                this.receiveRules.addAll(receiveRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
+            }
+        }
     }
 
 

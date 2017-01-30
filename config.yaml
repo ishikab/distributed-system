@@ -14,7 +14,7 @@ configuration :
   - name : charlie
     IP : 172.31.14.183
     port : 60002
-  - name : daphnie
+  - name : daph
     IP : 172.31.14.183
     port : 60003
 sendRules :
@@ -60,3 +60,5 @@ receiveRules :
   - action: duplicate
     kind: rdd
     duplicate: true
+  - action: drop
+    kind: du

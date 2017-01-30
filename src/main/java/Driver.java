@@ -15,16 +15,21 @@ public class Driver {
     public static void main(String[] args) throws IOException {
         LogUtil.log("Welcome to 18-842 distributed systems lab 0");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-        System.out.print("Please enter local name:: ");
-        String localName = br.readLine();
-        System.out.print("Please enter the name of configuration file:: ");
-        String configFileName = br.readLine();
-        if (configFileName.equals("")) {
-            LogUtil.logInfo("using default config file ./config.yaml");
-            configFileName = "config.yaml";
+        String localName, configFileName;
+        if (args.length == 0) {
+            System.out.print("Please enter local name:: ");
+            localName = br.readLine();
+            System.out.print("Please enter the name of configuration file:: ");
+            configFileName = br.readLine();
+            if (configFileName.equals("")) {
+                LogUtil.logInfo("using default config file ./config.yaml");
+                configFileName = "config.yaml";
+            }
+        } else {
+            localName = args[1];
+            configFileName = args[0];
+            LogUtil.logInfo("Reading from command line args");
         }
-
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
         while (true) {
             try {
@@ -49,6 +54,9 @@ public class Driver {
                         break;
                     case "nodes":
                         messagePasser.listNodes();
+                        break;
+                    case "updateConfiguration":
+                        messagePasser.updateConfiguration();
                         break;
                     default:
                         LogUtil.log("available commands: send/receive/exit/rules/nodes");
