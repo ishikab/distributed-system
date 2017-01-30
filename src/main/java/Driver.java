@@ -12,22 +12,24 @@ import java.io.InputStreamReader;
  * user interface for demo
  */
 public class Driver {
-    public static void main(String[] args) throws IOException{
-        System.out.println("Welcome to 18-842 distributed systems lab 0");
+    public static void main(String[] args) throws IOException {
+        LogUtil.log("Welcome to 18-842 distributed systems lab 0");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        System.out.println("Please enter local name::");
+        System.out.print("Please enter local name:: ");
         String localName = br.readLine();
-        
-        System.out.println("Please enter the name of configuration file::");
+        System.out.print("Please enter the name of configuration file:: ");
         String configFileName = br.readLine();
-        if (configFileName.equals("")) configFileName = "config.yaml";
-        
+        if (configFileName.equals("")) {
+            LogUtil.logInfo("using default config file ./config.yaml");
+            configFileName = "config.yaml";
+        }
+
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
         while (true) {
             try {
                 Message message;
-                System.out.print("please input [send/receive/exit]: ");
+                System.out.print(">>> ");
                 switch (br.readLine()) {
                     case "send":
                         message = new Message(messagePasser.getLocalName(), br);
@@ -41,6 +43,15 @@ public class Driver {
                     case "exit":
                         LogUtil.log("Thanks for using");
                         System.exit(0);
+                        break;
+                    case "rules":
+                        messagePasser.listRules();
+                        break;
+                    case "nodes":
+                        messagePasser.listNodes();
+                        break;
+                    default:
+                        LogUtil.log("available commands: send/receive/exit/rules/nodes");
                         break;
                 }
             } catch (IOException e) {

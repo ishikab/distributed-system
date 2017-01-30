@@ -1,7 +1,5 @@
 import org.yaml.snakeyaml.Yaml;
-import sun.rmi.runtime.Log;
 
-import javax.security.auth.callback.Callback;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -15,16 +13,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-/**
+/*
  * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
  * ibatra@andrew.cmu.edu
  */
+
+/**
+ * Main message pass class
+ */
 class MessagePasser implements MessageReceiveCallback {
-    private String configurationFileName;
-    private String localName;
-    private String ip;
-    private Integer port;
     private final ConcurrentHashMap<String, Node> nodeHashMap = new ConcurrentHashMap<>();
     private final LinkedList<Rule> sendRules = new LinkedList<>();
     private final LinkedList<Rule> receiveRules = new LinkedList<>();
@@ -32,31 +30,11 @@ class MessagePasser implements MessageReceiveCallback {
     private final LinkedBlockingQueue<Message> receiveMessagesQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<Message> receiveDelayMessageQueue = new LinkedBlockingQueue<>();
     private final ConcurrentHashMap<String, AtomicInteger> seqNumMap = new ConcurrentHashMap<>();
+    private String configurationFileName;
+    private String localName;
+    private String IP;
+    private Integer port;
     private MessageListenerThread listenerThread;
-
-    public String getLocalName() {
-        return localName;
-    }
-
-    public void setLocalName(String localName) {
-        this.localName = localName;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
-    }
 
     @SuppressWarnings("unchecked")
     MessagePasser(String configurationFilename, String localName) {
@@ -72,13 +50,13 @@ class MessagePasser implements MessageReceiveCallback {
                     if (nodeName != null) {
                         this.nodeHashMap.put(nodeName, new Node(map));
                         if (nodeName.equals(localName)) {
-                            this.ip = (String) map.get("ip");
+                            this.IP = (String) map.get("IP");
                             this.port = (Integer) map.get("port");
                         }
                     }
                 }
             } else LogUtil.logFatalErr("configuration section not found");
-            LogUtil.log(String.format("ip: %s:%s", this.ip, this.port));
+            LogUtil.logInfo(String.format("[%s] %s:%s", this.localName, this.IP, this.port));
             ArrayList<LinkedHashMap<String, Object>> sendRulesConfig = dataMap.getOrDefault("sendRules", null);
             if (sendRulesConfig != null) {
                 this.sendRules.addAll(sendRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
@@ -89,8 +67,43 @@ class MessagePasser implements MessageReceiveCallback {
             }
         }
         checkNodeInfo();
-        listenerThread = new MessageListenerThread(this.port, this.receiveRules, this);
+        listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static HashMap<String, ArrayList> readConfiguration(String config) {
+        try {
+            FileInputStream fileInputStream = new FileInputStream(config);
+            return (HashMap<String, ArrayList>) new Yaml().load(fileInputStream);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getLocalName() {
+        return localName;
+    }
+
+    public void setLocalName(String localName) {
+        this.localName = localName;
+    }
+
+    public String getIP() {
+        return IP;
+    }
+
+    public void setIP(String IP) {
+        this.IP = IP;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
     void send(Message message) {
@@ -136,7 +149,7 @@ class MessagePasser implements MessageReceiveCallback {
             LogUtil.logErr("dest not found");
             return;
         }
-        try (Socket socket = new Socket(destNode.getIp(), destNode.getPort())) {
+        try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
             try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
                 LogUtil.log(message);
                 out.writeObject(message);
@@ -185,25 +198,14 @@ class MessagePasser implements MessageReceiveCallback {
         return message;
     }
 
-    @SuppressWarnings("unchecked")
-    private static HashMap<String, ArrayList> readConfiguration(String config) {
-        try {
-            FileInputStream fileInputStream = new FileInputStream(config);
-            return (HashMap<String, ArrayList>) new Yaml().load(fileInputStream);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private void checkNodeInfo() {
         try {
             if (this.nodeHashMap.getOrDefault(this.localName, null) == null) {
                 LogUtil.logFatalErr("local name not found");
             }
             String localIP = InetAddress.getLocalHost().getHostAddress();
-            if (!localIP.equals(this.nodeHashMap.get(this.localName).getIp())) {
-                LogUtil.logFatalErr(String.format("Localhost IP (%s) doesn't match. supposed to be (%s", localIP, this.nodeHashMap.get(this.localName).getIp()));
+            if (!localIP.equals(this.nodeHashMap.get(this.localName).getIP())) {
+                LogUtil.logFatalErr(String.format("Localhost IP (%s) doesn't match. supposed to be (%s", localIP, this.nodeHashMap.get(this.localName).getIP()));
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -211,4 +213,24 @@ class MessagePasser implements MessageReceiveCallback {
             System.exit(-1);
         }
     }
+
+    private void listReceiveRules() {
+        LogUtil.logIterable("Receive Rules Info:", this.receiveRules);
+    }
+
+    private void listSendRules() {
+        LogUtil.logIterable("Send Rules Info:", this.sendRules);
+    }
+
+    void listRules() {
+        this.listSendRules();
+        this.listReceiveRules();
+    }
+
+    void listNodes() {
+        LogUtil.logIterable("Nodes Info:", this.nodeHashMap.values());
+
+    }
+
+
 }

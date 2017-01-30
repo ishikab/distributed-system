@@ -5,17 +5,17 @@
 # The local node’s name is included in this list
 configuration :
   - name : alice
-    ip : 192.168.0.117
+    IP : 192.168.0.117
     port : 60000 # This is the incoming port on which MP will listen
 # May be ephemeral for further communication as usual
   - name : bob
-    ip : 192.168.0.117
+    IP : 192.168.0.117
     port : 60001
   - name : charlie
-    ip : 172.31.14.183
+    IP : 172.31.14.183
     port : 60002
   - name : daphnie
-    ip : 172.31.14.183
+    IP : 172.31.14.183
     port : 60003
 sendRules :
   - action : drop # Ack message number 4 from bob to alice will not be sent

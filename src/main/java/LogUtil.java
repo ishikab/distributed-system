@@ -4,17 +4,31 @@
  * ibatra@andrew.cmu.edu
  */
 
-public class LogUtil {
-    public static void log(String message){
-        System.out.println("[INFO] " + message);
+class LogUtil {
+    static void log(String message) {
+        System.out.println(message);
     }
-    public static void log(Object message){
+
+    static void log(Object message) {
         log(message.toString());
     }
-    public static void logErr(String message) {
+
+    static void logInfo(Object message) {
+        System.out.println("[INFO] " + message.toString());
+    }
+
+    @SuppressWarnings("unchecked")
+    static void logIterable(String title, Iterable iterable) {
+        log(title.toUpperCase());
+        iterable.forEach(LogUtil::log);
+        log("");
+    }
+
+    static void logErr(String message) {
         System.err.println("[ERROR] " + message);
     }
-    public static void logFatalErr(String message) {
+
+    static void logFatalErr(String message) {
         logErr(message);
         System.exit(-1);
     }

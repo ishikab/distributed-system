@@ -1,9 +1,13 @@
 import java.util.LinkedHashMap;
 
-/**
+/*
  * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
  * chenxi.wang@sv.cmu.edu
  * ibatra@andrew.cmu.edu
+ */
+
+/**
+ * Rules used to match specific messages
  */
 class Rule {
     Integer seqNum = -1;
@@ -15,9 +19,7 @@ class Rule {
         if (data.containsKey("dest")) this.dest = (String) data.get("dest");
         if (data.containsKey("kind")) this.kind = (String) data.get("kind");
         if (data.containsKey("seqNum")) this.seqNum = (Integer) data.get("seqNum");
-        if ((data.containsKey("duplicate")) && (boolean) data.get("duplicate"))
-            this.isDuplicate = true;
-
+        if ((data.containsKey("duplicate")) && (boolean) data.get("duplicate")) this.isDuplicate = true;
         switch ((String) data.get("action")) {
             case "drop":
                 this.action = Action.DROP;
@@ -36,20 +38,15 @@ class Rule {
 
     @Override
     public String toString() {
-        return "Rule{" +
-                "src='" + src + '\'' +
-                ", dest='" + dest + '\'' +
-                ", kind='" + kind + '\'' +
-                ", seqNum=" + seqNum +
-                ", action=" + action +
-                '}';
+        return "[" + action + "]" +
+                (src == null ? "" : " src=" + src) +
+                (dest == null ? "" : " dest=" + dest) +
+                (kind == null ? "" : " kind=" + kind) +
+                (seqNum < 0 ? "" : " #seq=" + seqNum) +
+                (isDuplicate ? " duplicate=true" : "");
     }
 
-    public boolean isDuplicate() {
-        return isDuplicate;
-    }
-
-    public boolean matches(Message message) {
+    boolean matches(Message message) {
         if (this.src != null) {
             if (!src.equals(message.getSrc())) return false;
         }

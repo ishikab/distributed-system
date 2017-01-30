@@ -11,16 +11,14 @@ import java.util.LinkedList;
  * ibatra@andrew.cmu.edu
  */
 
-public class MessageListenerThread extends Thread {
-    Integer port;
-    LinkedList<Rule> receiveRules;
+class MessageListenerThread extends Thread {
+    private Integer port;
     private ServerSocket serverSocket;
-    private MessageReceiveCallback callback;
+    private MessageReceiveCallback messageReceiveCallback;
 
-    MessageListenerThread(Integer port, LinkedList<Rule> receiveRules, MessageReceiveCallback callback) {
+    MessageListenerThread(Integer port, MessageReceiveCallback callback) {
         this.port = port;
-        this.receiveRules = receiveRules;
-        this.callback = callback;
+        this.messageReceiveCallback = callback;
     }
 
     @Override
@@ -30,7 +28,7 @@ public class MessageListenerThread extends Thread {
             while (true) {
                 Socket socket = serverSocket.accept();
                 Message message = (Message) new ObjectInputStream(new BufferedInputStream(socket.getInputStream())).readObject();
-                callback.handleMessage(message);
+                messageReceiveCallback.handleMessage(message);
             }
         } catch (IOException e) {
             e.printStackTrace();

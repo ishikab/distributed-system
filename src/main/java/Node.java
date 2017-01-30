@@ -6,9 +6,12 @@ import java.util.LinkedHashMap;
  * ibatra@andrew.cmu.edu
  */
 
+/**
+ * Node data structure for cluster node info
+ */
 class Node {
     private String name;
-    private String ip;
+    private String IP;
     private Integer port;
 
     public String getName(){
@@ -19,15 +22,17 @@ class Node {
         this.name = name;
     }
 
-    public String getIp() {
-        return ip;
+    Node(LinkedHashMap data) {
+        this.name = (String) data.get("name");
+        this.IP = (String) data.get("IP");
+        this.port = (Integer) data.get("port");
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    String getIP() {
+        return IP;
     }
 
-    public Integer getPort() {
+    Integer getPort() {
         return port;
     }
 
@@ -35,9 +40,12 @@ class Node {
         this.port = port;
     }
 
-    Node(LinkedHashMap data) {
-        this.name = (String) data.get("name");
-        this.ip = (String) data.get("ip");
-        this.port = (Integer) data.get("port");
+    public void setIP(String IP) {
+        this.IP = IP;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[%s] %s:%d", this.name, this.IP, this.port);
     }
 }
