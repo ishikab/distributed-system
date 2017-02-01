@@ -32,7 +32,7 @@ public class Driver {
         while (true) {
             try {
                 Message message;
-                System.out.print(">>> ");
+                System.out.print("Please enter send/receive/exit/rules/nodes >>> ");
                 switch (br.readLine()) {
                     case "send":
                         message = new Message(messagePasser.getLocalName(), br);
