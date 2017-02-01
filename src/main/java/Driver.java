@@ -1,12 +1,10 @@
+import logger.LogUtil;
+import message.Message;
+import message.MessagePasser;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-/*
- * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
- * chenxi.wang@sv.cmu.edu
- * ibatra@andrew.cmu.edu
- */
 
 /**
  * user interface for demo
@@ -55,7 +53,7 @@ public class Driver {
                     case "nodes":
                         messagePasser.listNodes();
                         break;
-                    case "updateConfiguration":
+                    case "update":
                         messagePasser.updateConfiguration();
                         break;
                     default:

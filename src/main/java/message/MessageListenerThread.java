@@ -1,15 +1,12 @@
+package message;
+
+import logger.LogUtil;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.LinkedList;
-
-/*
- * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
- * chenxi.wang@sv.cmu.edu
- * ibatra@andrew.cmu.edu
- */
 
 class MessageListenerThread extends Thread {
     private Integer port;

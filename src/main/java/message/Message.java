@@ -1,18 +1,15 @@
+package message;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
-
-/*
- * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
- * chenxi.wang@sv.cmu.edu
- * ibatra@andrew.cmu.edu
- */
 
 public class Message implements Serializable, Cloneable {
     private String src = null, dest = null, kind = null;
     private Object data = null;
     private Integer seqNum = -1;
     private Boolean isDuplicate = false;
+
     public Message(String dest, String kind, Object data) {
         this.dest = dest;
         this.kind = kind;
@@ -71,7 +68,7 @@ public class Message implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return "Message{" +
+        return "message.Message{" +
                 "src='" + src + '\'' +
                 ", dest='" + dest + '\'' +
                 ", kind='" + kind + '\'' +

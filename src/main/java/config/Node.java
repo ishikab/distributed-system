@@ -1,15 +1,11 @@
+package config;
+
 import java.util.LinkedHashMap;
 
-/*
- * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
- * chenxi.wang@sv.cmu.edu
- * ibatra@andrew.cmu.edu
- */
-
 /**
- * Node data structure for cluster node info
+ * config.Node data structure for cluster node info
  */
-class Node {
+public class Node {
     private String name;
     private String IP;
     private Integer port;
@@ -28,11 +24,11 @@ class Node {
         this.port = (Integer) data.get("port");
     }
 
-    String getIP() {
+    public String getIP() {
         return IP;
     }
 
-    Integer getPort() {
+    public Integer getPort() {
         return port;
     }
 

@@ -1,19 +1,17 @@
-import java.util.LinkedHashMap;
+package config;
 
-/*
- * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
- * chenxi.wang@sv.cmu.edu
- * ibatra@andrew.cmu.edu
- */
+import message.Message;
+
+import java.util.LinkedHashMap;
 
 /**
  * Rules used to match specific messages
  */
-class Rule {
-    Integer seqNum = -1;
-    Action action = Action.NONE;
-    private String src = null, dest = null, kind = null;
-    private Boolean isDuplicate = false;
+public class Rule {
+    public Integer seqNum = -1;
+    public Action action = Action.NONE;
+    public String src = null, dest = null, kind = null;
+    public Boolean isDuplicate = false;
     Rule(LinkedHashMap<String, Object> data) {
         if (data.containsKey("src")) this.src = (String) data.get("src");
         if (data.containsKey("dest")) this.dest = (String) data.get("dest");
@@ -46,7 +44,7 @@ class Rule {
                 (isDuplicate ? " duplicate=true" : "");
     }
 
-    boolean matches(Message message) {
+    public boolean matches(Message message) {
         if (this.src != null) {
             if (!src.equals(message.getSrc())) return false;
         }
@@ -65,7 +63,7 @@ class Rule {
         return true;
     }
 
-    enum Action {
+    public enum Action {
         DROP, DROP_AFTER, DUPLICATE, DELAY, NONE
     }
 }

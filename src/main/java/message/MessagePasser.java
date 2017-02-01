@@ -1,62 +1,48 @@
-import org.yaml.snakeyaml.Yaml;
+package message;
 
-import java.io.*;
+import config.Configuration;
+import config.Node;
+import config.Rule;
+import logger.LogUtil;
+
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-/*
- * 18842-lab0 Chenxi Wang, Ishika Batra, Team 6
- * chenxi.wang@sv.cmu.edu
- * ibatra@andrew.cmu.edu
- */
 
 /**
  * Main message pass class
  */
-class MessagePasser implements MessageReceiveCallback {
-    private final ConcurrentHashMap<String, Node> nodeHashMap = new ConcurrentHashMap<>();
-    private final LinkedList<Rule> sendRules = new LinkedList<>();
-    private final LinkedList<Rule> receiveRules = new LinkedList<>();
+public class MessagePasser implements MessageReceiveCallback {
+    private final Configuration configuration = new Configuration();
     private final LinkedBlockingQueue<Message> sendDelayMessageQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<Message> receiveMessagesQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<Message> receiveDelayMessageQueue = new LinkedBlockingQueue<>();
     private final ConcurrentHashMap<String, AtomicInteger> seqNumMap = new ConcurrentHashMap<>();
-    private String configurationFileName;
     private String localName;
     private String IP;
     private Integer port;
     private MessageListenerThread listenerThread;
 
     @SuppressWarnings("unchecked")
-    MessagePasser(String configurationFilename, String localName) {
-        this.configurationFileName = configurationFilename;
+    public MessagePasser(String configFileName, String localName) {
         this.localName = localName;
         //this.seqNum = new AtomicInteger(0);
-        updateConfiguration();
+        configuration.updateConfiguration(configFileName);
+        Node self = configuration.nodeMap.get(localName);
+        LogUtil.logInfo(self);
+        this.IP = self.getIP();
+        this.port = self.getPort();
         checkNodeInfo();
         listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
     }
 
-    @SuppressWarnings("unchecked")
-    private static HashMap<String, ArrayList> readConfiguration(String config) {
-        try {
-            FileInputStream fileInputStream = new FileInputStream(config);
-            return (HashMap<String, ArrayList>) new Yaml().load(fileInputStream);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public String getLocalName() {
         return localName;
@@ -82,12 +68,12 @@ class MessagePasser implements MessageReceiveCallback {
         this.port = port;
     }
 
-    void send(Message message) {
+    public void send(Message message) {
         boolean duplicateMessage = false;
         try {
             seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
             message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
-            for (Rule rule : sendRules) {
+            for (Rule rule : configuration.sendRules) {
                 if (rule.matches(message)) {
                     LogUtil.log("found match: " + rule);
                     LogUtil.log(String.format("[%s] %s", rule.action, message));
@@ -120,7 +106,7 @@ class MessagePasser implements MessageReceiveCallback {
     }
 
     private void directSend(Message message) throws IOException {
-        Node destNode = this.nodeHashMap.getOrDefault(message.getDest(), null);
+        Node destNode = this.configuration.nodeMap.getOrDefault(message.getDest(), null);
         if (destNode == null) {
             LogUtil.logErr("dest not found");
             return;
@@ -137,7 +123,7 @@ class MessagePasser implements MessageReceiveCallback {
     @Override
     public void handleMessage(Message message) {
         //LogUtil.log(message);
-        for (Rule rule : this.receiveRules) {
+        for (Rule rule : this.configuration.receiveRules) {
             if (rule.matches(message)) {
                 LogUtil.log("found rule match: " + rule);
                 LogUtil.log(String.format("[%s] %s", rule.action, message));
@@ -164,7 +150,7 @@ class MessagePasser implements MessageReceiveCallback {
         this.receiveMessagesQueue.add(message);
     }
 
-    Message receive() {
+    public Message receive() {
         if (receiveMessagesQueue.peek() == null)
             return null;
         Message message = receiveMessagesQueue.poll();
@@ -176,12 +162,13 @@ class MessagePasser implements MessageReceiveCallback {
 
     private void checkNodeInfo() {
         try {
-            if (this.nodeHashMap.getOrDefault(this.localName, null) == null) {
+            if (this.configuration.nodeMap.getOrDefault(this.localName, null) == null) {
                 LogUtil.logFatalErr("local name not found");
             }
             String localIP = InetAddress.getLocalHost().getHostAddress();
-            if (!localIP.equals(this.nodeHashMap.get(this.localName).getIP())) {
-                LogUtil.logFatalErr(String.format("Localhost IP (%s) doesn't match. supposed to be (%s", localIP, this.nodeHashMap.get(this.localName).getIP()));
+            if (!localIP.equals(this.configuration.nodeMap.get(this.localName).getIP())) {
+                LogUtil.logFatalErr(String.format("Localhost IP (%s) doesn't match. supposed to be (%s", localIP,
+                        this.configuration.nodeMap.get(this.localName).getIP()));
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -191,53 +178,24 @@ class MessagePasser implements MessageReceiveCallback {
     }
 
     private void listReceiveRules() {
-        LogUtil.logIterable("Receive Rules Info:", this.receiveRules);
+        LogUtil.logIterable("Receive Rules Info:", this.configuration.receiveRules);
     }
 
     private void listSendRules() {
-        LogUtil.logIterable("Send Rules Info:", this.sendRules);
+        LogUtil.logIterable("Send Rules Info:", this.configuration.sendRules);
     }
 
-    void listRules() {
+    public void listRules() {
         this.listSendRules();
         this.listReceiveRules();
     }
 
-    void listNodes() {
-        LogUtil.logIterable("Nodes Info:", this.nodeHashMap.values());
+    public void listNodes() {
+        LogUtil.logIterable("Nodes Info:", this.configuration.nodeMap.values());
 
     }
 
-    void updateConfiguration() {
-        this.nodeHashMap.clear();
-        this.sendRules.clear();
-        this.receiveRules.clear();
-        HashMap<String, ArrayList> dataMap = readConfiguration(this.configurationFileName);
-        if (dataMap != null) {
-            ArrayList<LinkedHashMap<String, Object>> nodeConfig = dataMap.getOrDefault("configuration", null);
-            if (nodeConfig != null) {
-                for (LinkedHashMap map : nodeConfig) {
-                    String nodeName = (String) map.get("name");
-                    if (nodeName != null) {
-                        this.nodeHashMap.put(nodeName, new Node(map));
-                        if (nodeName.equals(localName)) {
-                            this.IP = (String) map.get("IP");
-                            this.port = (Integer) map.get("port");
-                        }
-                    }
-                }
-            } else LogUtil.logFatalErr("configuration section not found");
-            LogUtil.logInfo(String.format("[%s] %s:%s", this.localName, this.IP, this.port));
-            ArrayList<LinkedHashMap<String, Object>> sendRulesConfig = dataMap.getOrDefault("sendRules", null);
-            if (sendRulesConfig != null) {
-                this.sendRules.addAll(sendRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
-            }
-            ArrayList<LinkedHashMap<String, Object>> receiveRulesConfig = dataMap.getOrDefault("receiveRules", null);
-            if (receiveRulesConfig != null) {
-                this.receiveRules.addAll(receiveRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
-            }
-        }
+    public void updateConfiguration() {
+        this.configuration.updateConfiguration();
     }
-
-
 }
