@@ -10,7 +10,6 @@ public class LogicalTimeStamp extends TimeStamp implements Comparable<LogicalTim
 
     public LogicalTimeStamp() {
         this.value.set(currentTimeStamp.getAndAdd(1));
-//        this.value.set(0);
         LogUtil.debug(this);
     }
 

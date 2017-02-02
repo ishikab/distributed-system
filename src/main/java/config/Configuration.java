@@ -13,10 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Configuration {
-    public final ConcurrentHashMap<String, Node> nodeMap = new ConcurrentHashMap<>();
-    public final LinkedList<Rule> sendRules = new LinkedList<>();
-    public final LinkedList<Rule> receiveRules = new LinkedList<>();
+    public static final ConcurrentHashMap<String, Node> nodeMap = new ConcurrentHashMap<>();
+    public static final LinkedList<Rule> sendRules = new LinkedList<>();
+    public static final LinkedList<Rule> receiveRules = new LinkedList<>();
+    public static String localName;
     private String configurationFileName;
+    private static Integer numNodes = null;
 
     public Configuration(String fileName) {
         this.configurationFileName = fileName;
@@ -25,6 +27,12 @@ public class Configuration {
 
     public Configuration() {
 
+    }
+
+    public static Integer getNumNodes() {
+        if (numNodes == null)
+            LogUtil.fatalError("Read num nodes before initialization");
+        return numNodes;
     }
 
     @SuppressWarnings("unchecked")
@@ -45,9 +53,9 @@ public class Configuration {
 
     @SuppressWarnings("unchecked")
     public void updateConfiguration() {
-        this.nodeMap.clear();
-        this.sendRules.clear();
-        this.receiveRules.clear();
+        nodeMap.clear();
+        sendRules.clear();
+        receiveRules.clear();
         HashMap<String, ArrayList> dataMap = readConfiguration(this.configurationFileName);
         if (dataMap != null) {
             ArrayList<LinkedHashMap<String, Object>> nodeConfig = dataMap.getOrDefault("configuration", null);
@@ -55,17 +63,18 @@ public class Configuration {
                 for (LinkedHashMap map : nodeConfig) {
                     String nodeName = (String) map.get("name");
                     if (nodeName != null) {
-                        this.nodeMap.put(nodeName, new Node(map));
+                        nodeMap.put(nodeName, new Node(map));
                     }
                 }
+                numNodes = nodeMap.size();
             } else LogUtil.fatalError("configuration section not found");
             ArrayList<LinkedHashMap<String, Object>> sendRulesConfig = dataMap.getOrDefault("sendRules", null);
             if (sendRulesConfig != null) {
-                this.sendRules.addAll(sendRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
+                sendRules.addAll(sendRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
             }
             ArrayList<LinkedHashMap<String, Object>> receiveRulesConfig = dataMap.getOrDefault("receiveRules", null);
             if (receiveRulesConfig != null) {
-                this.receiveRules.addAll(receiveRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
+                receiveRules.addAll(receiveRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
             }
         }
     }

@@ -6,10 +6,11 @@ import java.util.LinkedHashMap;
  * config.Node data structure for cluster node info
  */
 public class Node {
+    private static Integer nodeIdGenerator = 0;
     private String name;
     private String IP;
     private Integer port;
-
+    private Integer nodeId;
     public String getName(){
         return this.name;
     }
@@ -22,6 +23,12 @@ public class Node {
         this.name = (String) data.get("name");
         this.IP = (String) data.get("IP");
         this.port = (Integer) data.get("port");
+        this.nodeId = nodeIdGenerator;
+        nodeIdGenerator++;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
     }
 
     public String getIP() {
@@ -42,6 +49,6 @@ public class Node {
 
     @Override
     public String toString() {
-        return String.format("[%s] %s:%d", this.name, this.IP, this.port);
+        return String.format("[%d][%s] %s:%d", this.nodeId, this.name, this.IP, this.port);
     }
 }

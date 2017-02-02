@@ -32,6 +32,7 @@ public class MessagePasser implements MessageReceiveCallback {
     @SuppressWarnings("unchecked")
     public MessagePasser(String configFileName, String localName) {
         this.localName = localName;
+        Configuration.localName = localName;
         //this.seqNum = new AtomicInteger(0);
         configuration.updateConfiguration(configFileName);
         Node self = configuration.nodeMap.get(localName);
@@ -73,7 +74,7 @@ public class MessagePasser implements MessageReceiveCallback {
         try {
             seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
             message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
-            for (Rule rule : configuration.sendRules) {
+            for (Rule rule : Configuration.sendRules) {
                 if (rule.matches(message)) {
                     LogUtil.log("found match: " + rule);
                     LogUtil.log(String.format("[%s] %s", rule.action, message));

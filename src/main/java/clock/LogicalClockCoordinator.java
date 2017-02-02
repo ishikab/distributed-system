@@ -15,9 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * chenxi.wang@sv.cmu.edu
  */
 public class LogicalClockCoordinator extends ClockCoordinator {
-    private LogicalTimeStamp timeStamp;
     private static LogicalClockCoordinator instance = new LogicalClockCoordinator();
-
     public static LogicalClockCoordinator getInstance() {
         return instance;
     }
@@ -35,6 +33,11 @@ public class LogicalClockCoordinator extends ClockCoordinator {
     @Override
     public AtomicInteger getLocalTime() {
         return LogicalTimeStamp.getCurrentTimeStamp();
+    }
+
+    @Override
+    public Integer getStatus() {
+        return LogicalTimeStamp.getCurrentTimeStamp().get();
     }
 
     @Override

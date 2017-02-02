@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
  */
 public class Driver {
     public static void main(String[] args) throws IOException {
+        ClockCoordinator.ClockType clockType = ClockCoordinator.ClockType.VECTOR;
         LogUtil.log("Welcome to 18-842 Distributed Systems lab project");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String localName, configFileName;
@@ -32,7 +33,7 @@ public class Driver {
             LogUtil.info("Reading from command line args");
         }
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
-        ClockCoordinator clockCoordinator = ClockCoordinator.getInstance(ClockCoordinator.ClockType.LOGICAL);
+        ClockCoordinator clockCoordinator = ClockCoordinator.getInstance(clockType);
         while (true) {
             try {
                 Message message;
@@ -63,7 +64,7 @@ public class Driver {
                         messagePasser.updateConfiguration();
                         break;
                     case "time":
-                        LogUtil.log(clockCoordinator.getLocalTime());
+                        LogUtil.log(clockCoordinator.getStatus());
                         break;
                     case "play":
                         clockCoordinator.doNothing();

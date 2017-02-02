@@ -16,9 +16,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class ClockCoordinator {
     public enum ClockType {LOGICAL, VECTOR}
 
+    static Integer localNodeId;
+    static TimeStamp localTimeStamp;
+
     public static ClockCoordinator getInstance(ClockType clockType) {
         switch (clockType) {
             case VECTOR:
+                return VectorClockCoordinator.getInstance();
             case LOGICAL:
             default:
                 return LogicalClockCoordinator.getInstance();
@@ -28,6 +32,8 @@ public abstract class ClockCoordinator {
     public abstract void doNothing();
 
     public abstract AtomicInteger getLocalTime();
+
+    public abstract Object getStatus();
 
     public abstract void updateTime(TimeStamp timeStamp);
 }
