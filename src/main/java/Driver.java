@@ -1,3 +1,5 @@
+import clock.ClockCoordinator;
+import clock.LogicalTimeStamp;
 import logger.LogUtil;
 import message.Message;
 import message.MessagePasser;
@@ -12,7 +14,7 @@ import java.io.InputStreamReader;
  */
 public class Driver {
     public static void main(String[] args) throws IOException {
-        LogUtil.log("Welcome to 18-842 distributed systems lab 0");
+        LogUtil.log("Welcome to 18-842 Distributed Systems lab project");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String localName, configFileName;
         if (args.length == 0) {
@@ -30,6 +32,7 @@ public class Driver {
             LogUtil.info("Reading from command line args");
         }
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
+        ClockCoordinator clockCoordinator = ClockCoordinator.getInstance(ClockCoordinator.ClockType.LOGICAL);
         while (true) {
             try {
                 Message message;
@@ -41,6 +44,8 @@ public class Driver {
                         break;
                     case "receive":
                         message = messagePasser.receive();
+                        if (message instanceof TimeStampedMessage)
+                            clockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
                         if (message == null) LogUtil.log("No new message");
                         else LogUtil.log(message);
                         break;
@@ -56,6 +61,13 @@ public class Driver {
                         break;
                     case "update":
                         messagePasser.updateConfiguration();
+                        break;
+                    case "time":
+                        LogUtil.log(clockCoordinator.getLocalTime());
+                        break;
+                    case "play":
+                        clockCoordinator.doNothing();
+                        LogUtil.log("playing, local time +1s");
                         break;
                     default:
                         LogUtil.log("available commands: send/receive/exit/rules/nodes");

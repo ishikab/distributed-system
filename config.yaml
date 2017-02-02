@@ -9,13 +9,13 @@ configuration :
     port : 60000 # This is the incoming port on which MP will listen
 # May be ephemeral for further communication as usual
   - name : bob
-    IP : 192.168.0.117
+    IP : localhost
     port : 60001
   - name : charlie
-    IP : 172.31.14.183
+    IP : localhost
     port : 60002
   - name : daph
-    IP : 172.31.14.183
+    IP : localhost
     port : 60003
 sendRules :
   - action : drop # Ack message number 4 from bob to alice will not be sent

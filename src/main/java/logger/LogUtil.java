@@ -23,6 +23,10 @@ public class LogUtil {
         logger.info(message.toString());
     }
 
+    public static void debug(Object message) {
+        logger.debug(message.toString());
+    }
+
     private static void logWithIndent(Object message) {log("  " + message.toString());};
 
     @SuppressWarnings("unchecked")

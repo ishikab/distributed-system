@@ -16,14 +16,28 @@ public class TimeStampedMessage extends Message implements Comparable<TimeStampe
     public TimeStampedMessage(String source, BufferedReader br) {
         super(source, br);
         this.timeStamp = new LogicalTimeStamp();
-        LogUtil.info(this.timeStamp);
-        LogicalTimeStamp a = new LogicalTimeStamp();
-        LogUtil.info(a);
+    }
 
+    @Override
+    public String toString() {
+        return "message.TimeStampedMessage{" +
+                "src='" + src + '\'' +
+                ", dest='" + dest + '\'' +
+                ", kind='" + kind + '\'' +
+                ", data=" + data +
+                ", seqNum=" + seqNum +
+                ", isDuplicate=" + isDuplicate +
+                ", timeStamp=" + timeStamp +
+                '}';
+    }
+
+    public TimeStamp getTimeStamp() {
+        return timeStamp;
     }
 
     @Override
     public int compareTo(TimeStampedMessage message) {
         return 0;
     }
+
 }

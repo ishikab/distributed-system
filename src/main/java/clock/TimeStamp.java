@@ -10,4 +10,5 @@ public abstract class TimeStamp implements Serializable, Cloneable{
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+
 }

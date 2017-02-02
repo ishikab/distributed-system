@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public class Message implements Serializable, Cloneable {
-    private String src = null, dest = null, kind = null;
-    private Object data = null;
-    private Integer seqNum = -1;
-    private Boolean isDuplicate = false;
+    String src = null, dest = null, kind = null;
+    Object data = null;
+    Integer seqNum = -1;
+    Boolean isDuplicate = false;
 
     public Message(String dest, String kind, Object data) {
         this.dest = dest;
@@ -19,11 +19,11 @@ public class Message implements Serializable, Cloneable {
     public Message(String source, BufferedReader br) {
         try {
             this.src = source;
-            System.out.print("destination: ");
+            System.out.print("destination:");
             this.dest = br.readLine();
-            System.out.print("kind: ");
+            System.out.print("kind:");
             this.kind = br.readLine();
-            System.out.print("message: ");
+            System.out.print("message:");
             this.data = br.readLine();
         } catch (IOException e) {
             e.printStackTrace();

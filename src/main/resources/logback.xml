@@ -11,7 +11,7 @@
              ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
             <!--<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
-            <pattern>%d{YYYY/MM/DD HH:mm:ss} [%-5level] %msg%n</pattern>
+            <pattern>[%-5level] %d{"MMM dd HH:mm:ss:SSS Z"} %msg%n</pattern>
         </encoder>
     </appender>
 
