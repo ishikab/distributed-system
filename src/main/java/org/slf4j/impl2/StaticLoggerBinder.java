@@ -1,4 +1,10 @@
-package org.slf4j.impl;
+/*
+ * 18-842 Distributed Systems Team 6
+ * Chenxi Wang (chenxi.wang@sv.cmu.edu)
+ * Ishika Batra (ibatra@andrew.cmu.edu)
+ */
+
+package org.slf4j.impl2;
 
 import org.slf4j.ILoggerFactory;
 import org.slf4j.spi.LoggerFactoryBinder;

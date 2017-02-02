@@ -32,6 +32,7 @@ public class Driver {
         }
         Logger logger = LoggerFactory.getLogger(Driver.class);
         logger.info("hello");
+        logger.error("world");
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
         while (true) {
             try {
