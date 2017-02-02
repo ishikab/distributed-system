@@ -5,7 +5,7 @@
 # The local node’s name is included in this list
 configuration :
   - name : alice
-    IP : 192.168.0.117
+    IP : localhost
     port : 60000 # This is the incoming port on which MP will listen
 # May be ephemeral for further communication as usual
   - name : bob

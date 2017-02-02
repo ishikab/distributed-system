@@ -38,7 +38,7 @@ public class MessagePasser implements MessageReceiveCallback {
         LogUtil.logInfo(self);
         this.IP = self.getIP();
         this.port = self.getPort();
-        checkNodeInfo();
+//        checkNodeInfo();
         listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
     }

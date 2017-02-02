@@ -1,6 +1,8 @@
 import logger.LogUtil;
 import message.Message;
 import message.MessagePasser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,11 +30,13 @@ public class Driver {
             configFileName = args[0];
             LogUtil.logInfo("Reading from command line args");
         }
+        Logger logger = LoggerFactory.getLogger(Driver.class);
+        logger.info("hello");
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
         while (true) {
             try {
                 Message message;
-                System.out.print("Please enter send/receive/exit/rules/nodes >>> ");
+                System.out.print(">>> ");
                 switch (br.readLine()) {
                     case "send":
                         message = new Message(messagePasser.getLocalName(), br);
