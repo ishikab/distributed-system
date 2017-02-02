@@ -1,8 +1,7 @@
 import logger.LogUtil;
 import message.Message;
 import message.MessagePasser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import message.TimeStampedMessage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,17 +21,14 @@ public class Driver {
             System.out.print("Please enter the name of configuration file:: ");
             configFileName = br.readLine();
             if (configFileName.equals("")) {
-                LogUtil.logInfo("using default config file ./config.yaml");
+                LogUtil.info("using default config file ./config.yaml");
                 configFileName = "config.yaml";
             }
         } else {
             localName = args[1];
             configFileName = args[0];
-            LogUtil.logInfo("Reading from command line args");
+            LogUtil.info("Reading from command line args");
         }
-        Logger logger = LoggerFactory.getLogger(Driver.class);
-        logger.info("hello");
-        logger.error("world");
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
         while (true) {
             try {
@@ -40,7 +36,7 @@ public class Driver {
                 System.out.print(">>> ");
                 switch (br.readLine()) {
                     case "send":
-                        message = new Message(messagePasser.getLocalName(), br);
+                        message = new TimeStampedMessage(messagePasser.getLocalName(), br);
                         messagePasser.send(message);
                         break;
                     case "receive":

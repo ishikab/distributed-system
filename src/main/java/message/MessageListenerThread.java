@@ -29,7 +29,7 @@ class MessageListenerThread extends Thread {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            LogUtil.logFatalErr("failed to listen");
+            LogUtil.fatalError("failed to listen");
         } catch (Exception e) {
             e.printStackTrace();
         }

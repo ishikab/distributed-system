@@ -35,7 +35,7 @@ public class MessagePasser implements MessageReceiveCallback {
         //this.seqNum = new AtomicInteger(0);
         configuration.updateConfiguration(configFileName);
         Node self = configuration.nodeMap.get(localName);
-        LogUtil.logInfo(self);
+        LogUtil.info(self);
         this.IP = self.getIP();
         this.port = self.getPort();
 //        checkNodeInfo();
@@ -108,7 +108,7 @@ public class MessagePasser implements MessageReceiveCallback {
     private void directSend(Message message) throws IOException {
         Node destNode = this.configuration.nodeMap.getOrDefault(message.getDest(), null);
         if (destNode == null) {
-            LogUtil.logErr("dest not found");
+            LogUtil.error("dest not found");
             return;
         }
         try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
@@ -163,16 +163,16 @@ public class MessagePasser implements MessageReceiveCallback {
     private void checkNodeInfo() {
         try {
             if (this.configuration.nodeMap.getOrDefault(this.localName, null) == null) {
-                LogUtil.logFatalErr("local name not found");
+                LogUtil.fatalError("local name not found");
             }
             String localIP = InetAddress.getLocalHost().getHostAddress();
             if (!localIP.equals(this.configuration.nodeMap.get(this.localName).getIP())) {
-                LogUtil.logFatalErr(String.format("Localhost IP (%s) doesn't match. supposed to be (%s", localIP,
+                LogUtil.fatalError(String.format("Localhost IP (%s) doesn't match. supposed to be (%s", localIP,
                         this.configuration.nodeMap.get(this.localName).getIP()));
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
-            LogUtil.logFatalErr("host not found");
+            LogUtil.fatalError("host not found");
             System.exit(-1);
         }
     }

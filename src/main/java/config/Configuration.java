@@ -58,7 +58,7 @@ public class Configuration {
                         this.nodeMap.put(nodeName, new Node(map));
                     }
                 }
-            } else LogUtil.logFatalErr("configuration section not found");
+            } else LogUtil.fatalError("configuration section not found");
             ArrayList<LinkedHashMap<String, Object>> sendRulesConfig = dataMap.getOrDefault("sendRules", null);
             if (sendRulesConfig != null) {
                 this.sendRules.addAll(sendRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));
