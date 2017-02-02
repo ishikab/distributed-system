@@ -12,10 +12,6 @@ import logger.LogUtil;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Created by chenxiw on 2/2/17.
- * chenxi.wang@sv.cmu.edu
- */
 public class VectorClockCoordinator extends ClockCoordinator {
     private static VectorClockCoordinator instance = new VectorClockCoordinator();
 
@@ -24,6 +20,7 @@ public class VectorClockCoordinator extends ClockCoordinator {
     }
 
     private VectorClockCoordinator() {
+        LogUtil.debug("Creating Vector Clock Coordinator");
         localNodeId = Configuration.nodeMap.get(Configuration.localName).getNodeId();
         VectorTimeStamp.initVectorTimeStamp(localNodeId);
     }
@@ -35,7 +32,7 @@ public class VectorClockCoordinator extends ClockCoordinator {
 
     @Override
     public AtomicInteger getLocalTime() {
-        return VectorTimeStamp.getCurrentTimeStamp().get(this.localNodeId);
+        return VectorTimeStamp.getCurrentTimeStamp().get(localNodeId);
     }
 
     @Override
@@ -47,13 +44,15 @@ public class VectorClockCoordinator extends ClockCoordinator {
     public void updateTime(TimeStamp timeStamp) {
         if (timeStamp instanceof VectorTimeStamp) {
             ArrayList<AtomicInteger> localTime = getStatus();
+            LogUtil.debug("local:  " + localTime);
             ArrayList<AtomicInteger> remoteTime = ((VectorTimeStamp) timeStamp).getValue();
+            LogUtil.debug("remote: " + remoteTime);
             for (int i = 0; i < localTime.size(); i++) {
-                int newTime = Math.max(localTime.get(i).get(), remoteTime.get(i).get()) + 1;
+                int newTime = Math.max(localTime.get(i).get(), remoteTime.get(i).get());
                 localTime.get(i).set(newTime);
             }
             localTime.get(localNodeId).addAndGet(1);
-            LogUtil.info(String.format("Time change (%s, %s) -> %s", localTime, remoteTime, LogicalTimeStamp.getCurrentTimeStamp().get()));
+            LogUtil.info(String.format("%s", getStatus()));
         } else {
             LogUtil.error("Inconsistent time stamp type, should be VectorTimeStamp");
         }

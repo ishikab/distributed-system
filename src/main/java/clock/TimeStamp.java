@@ -1,5 +1,7 @@
 package clock;
 
+import config.Configuration;
+
 import java.io.Serializable;
 
 /**
@@ -10,5 +12,4 @@ public abstract class TimeStamp implements Serializable, Cloneable{
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
-
 }

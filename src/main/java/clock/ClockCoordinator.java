@@ -9,17 +9,27 @@ package clock;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static clock.ClockCoordinator.ClockType.LOGICAL;
+import static clock.ClockCoordinator.ClockType.VECTOR;
+
 /**
  * Created by chenxiw on 2/2/17.
  * chenxi.wang@sv.cmu.edu
  */
 public abstract class ClockCoordinator {
     public enum ClockType {LOGICAL, VECTOR}
-
     static Integer localNodeId;
-    static TimeStamp localTimeStamp;
+    static ClockType clockType = VECTOR;
 
-    public static ClockCoordinator getInstance(ClockType clockType) {
+    public static ClockType getClockType() {
+        return clockType;
+    }
+
+    public static void setClockType(ClockType clockType) {
+        ClockCoordinator.clockType = clockType;
+    }
+
+    public static ClockCoordinator getInstance() {
         switch (clockType) {
             case VECTOR:
                 return VectorClockCoordinator.getInstance();

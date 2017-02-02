@@ -7,6 +7,7 @@
 package clock;
 
 import config.Configuration;
+import logger.LogUtil;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,10 +21,13 @@ public class VectorTimeStamp extends TimeStamp implements Comparable<VectorTimeS
     private static Integer nodeId;
     private static final ArrayList<AtomicInteger> currentTimeStamp = new ArrayList<>();
     private ArrayList<AtomicInteger> value = new ArrayList<>();
-    ;
 
+    @SuppressWarnings("unchecked")
     public VectorTimeStamp() {
-        this.value = (ArrayList<AtomicInteger>) currentTimeStamp.clone();
+        for(AtomicInteger nodeTimeStamp: currentTimeStamp) {
+            this.value.add(new AtomicInteger(nodeTimeStamp.intValue()));
+        }
+        incrementTime();
     }
 
     public static void initVectorTimeStamp(int id) {
@@ -51,6 +55,6 @@ public class VectorTimeStamp extends TimeStamp implements Comparable<VectorTimeS
 
     @Override
     public String toString() {
-        return "VectorTimeStamp{} " + super.toString() + value.toString();
+        return "VectorTimeStamp{" + value.toString() + "}";
     }
 }

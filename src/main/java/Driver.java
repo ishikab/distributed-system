@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
  */
 public class Driver {
     public static void main(String[] args) throws IOException {
-        ClockCoordinator.ClockType clockType = ClockCoordinator.ClockType.VECTOR;
         LogUtil.log("Welcome to 18-842 Distributed Systems lab project");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String localName, configFileName;
@@ -27,13 +26,18 @@ public class Driver {
                 LogUtil.info("using default config file ./config.yaml");
                 configFileName = "config.yaml";
             }
+            System.out.print("Please enter clock type [logical/vector]:: ");
+            String mode = br.readLine();
+            if(mode.toLowerCase().startsWith("logical"))
+                ClockCoordinator.setClockType(ClockCoordinator.ClockType.LOGICAL);
+            else ClockCoordinator.setClockType(ClockCoordinator.ClockType.VECTOR);
         } else {
             localName = args[1];
             configFileName = args[0];
             LogUtil.info("Reading from command line args");
         }
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
-        ClockCoordinator clockCoordinator = ClockCoordinator.getInstance(clockType);
+        ClockCoordinator clockCoordinator = ClockCoordinator.getInstance();
         while (true) {
             try {
                 Message message;
