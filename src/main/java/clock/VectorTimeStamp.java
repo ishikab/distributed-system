@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by chenxiw on 2/2/17.
  * chenxi.wang@sv.cmu.edu
  */
-public class VectorTimeStamp extends TimeStamp implements Comparable<VectorTimeStamp> {
+public class VectorTimeStamp extends TimeStamp {
 
     private static Integer nodeId;
     private static final ArrayList<AtomicInteger> currentTimeStamp = new ArrayList<>();
@@ -45,7 +45,7 @@ public class VectorTimeStamp extends TimeStamp implements Comparable<VectorTimeS
     }
 
     @Override
-    public int compareTo(VectorTimeStamp anotherVectorTimeStamp) {
+    public int compareTo(Object anotherVectorTimeStamp) {
         return 0;
     }
 

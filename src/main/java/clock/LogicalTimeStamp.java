@@ -4,7 +4,7 @@ import logger.LogUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LogicalTimeStamp extends TimeStamp implements Comparable<LogicalTimeStamp>{
+public class LogicalTimeStamp extends TimeStamp {
     private static final AtomicInteger currentTimeStamp = new AtomicInteger(0);
     private AtomicInteger value = new AtomicInteger(0);
 
@@ -21,8 +21,8 @@ public class LogicalTimeStamp extends TimeStamp implements Comparable<LogicalTim
         return currentTimeStamp;
     }
     @Override
-    public int compareTo(LogicalTimeStamp anotherTimeStamp) {
-        return this.value.get() - anotherTimeStamp.value.get();
+    public int compareTo(Object anotherTimeStamp) {
+        return this.value.get() - ((LogicalTimeStamp)anotherTimeStamp).value.get();
     }
 
     public void setValue(int val) {
