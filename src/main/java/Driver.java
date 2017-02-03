@@ -16,7 +16,7 @@ public class Driver {
     public static void main(String[] args) throws IOException {
         LogUtil.log("Welcome to 18-842 Distributed Systems lab project");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String localName, configFileName;
+        String localName, configFileName, mode;
         if (args.length == 0) {
             System.out.print("Please enter local name:: ");
             localName = br.readLine();
@@ -27,21 +27,27 @@ public class Driver {
                 configFileName = "config.yaml";
             }
             System.out.print("Please enter clock type [logical/vector]:: ");
-            String mode = br.readLine();
-            if(mode.toLowerCase().startsWith("logical"))
-                ClockCoordinator.setClockType(ClockCoordinator.ClockType.LOGICAL);
-            else ClockCoordinator.setClockType(ClockCoordinator.ClockType.VECTOR);
+            mode = br.readLine();
         } else {
             localName = args[1];
             configFileName = args[0];
+            mode = args[2];
             LogUtil.info("Reading from command line args");
         }
+        if(mode.toLowerCase().equals("logical"))
+            ClockCoordinator.setClockType(ClockCoordinator.ClockType.LOGICAL);
+        else if(mode.toLowerCase().equals("vector"))
+            ClockCoordinator.setClockType(ClockCoordinator.ClockType.VECTOR);
+        else {
+            LogUtil.log("Invalid clock type, setting default vector");
+        }
+
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
         ClockCoordinator clockCoordinator = ClockCoordinator.getInstance();
         while (true) {
             try {
                 Message message;
-                System.out.print(">>> ");
+                System.out.print("send/receive/exit/rules/nodes/time >>> ");
                 switch (br.readLine()) {
                     case "send":
                         message = new TimeStampedMessage(messagePasser.getLocalName(), br);
@@ -75,7 +81,7 @@ public class Driver {
                         LogUtil.log("playing, local time +1s");
                         break;
                     default:
-                        LogUtil.log("available commands: send/receive/exit/rules/nodes");
+                        LogUtil.log("available commands: send/receive/exit/rules/nodes/time");
                         break;
                 }
             } catch (IOException e) {
