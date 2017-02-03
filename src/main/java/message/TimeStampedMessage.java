@@ -38,7 +38,7 @@ public class TimeStampedMessage extends Message implements Comparable<TimeStampe
 
     @Override
     public int compareTo(TimeStampedMessage message) {
-        return 0;
+        return (this.getTimeStamp()).compareTo(message.getTimeStamp());
     }
 
 }
