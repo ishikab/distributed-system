@@ -13,6 +13,7 @@ import java.util.List;
 import message.TimeStampedMessage;
 import java.io.*;
 import java.util.Scanner;
+import clock.TimeStamp;
 
 public class LogUtil {
     private static final Logger logger = LoggerFactory.getLogger(LogUtil.class);
@@ -64,7 +65,7 @@ public class LogUtil {
         else {
             int i = 0;
             while(i < loggerMsgs.size()) {
-                if((loggerMsgs.get(i)).compareTo(msg) >= 0) {
+                if((loggerMsgs.get(i).getTimeStamp()).compareTo(msg.getTimeStamp()) != TimeStamp.comparision.lesser) {
                    loggerMsgs.add(i, msg);
                    return;
                 }
@@ -81,11 +82,11 @@ public class LogUtil {
 	    System.out.println(loggerMsgs);
 	    for(TimeStampedMessage msg: loggerMsgs) {
 	        if(cachedMsg != null) {
-                    Integer comp = msg.getTimeStamp().compareTo(cachedMsg.getTimeStamp());
-		    if (comp == 0) {
+                    TimeStamp.comparision order = msg.getTimeStamp().compareTo(cachedMsg.getTimeStamp());
+		    if (order == TimeStamp.comparision.parallel) {
                         concurrentMsgNum = concurrentMsgNum + 1;
                     }
-                    else if (comp > 0) {
+                    else if (order == TimeStamp.comparision.greater) {
                         concurrentMsgNum = 0;
                         msgNum++;
 		    }
