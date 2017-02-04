@@ -10,7 +10,7 @@ import java.io.BufferedReader;
 import java.util.Calendar;
 import java.util.Comparator;
 
-public class TimeStampedMessage extends Message implements Comparable<TimeStampedMessage> {
+public class TimeStampedMessage extends Message {
     private TimeStamp timeStamp;
     public TimeStampedMessage(String source, BufferedReader br) {
         super(source, br);
@@ -35,10 +35,4 @@ public class TimeStampedMessage extends Message implements Comparable<TimeStampe
     public TimeStamp getTimeStamp() {
         return timeStamp;
     }
-
-    @Override
-    public int compareTo(TimeStampedMessage message) {
-        return (this.getTimeStamp()).compareTo(message.getTimeStamp());
-    }
-
 }
