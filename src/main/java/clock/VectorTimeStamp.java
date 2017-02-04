@@ -45,8 +45,30 @@ public class VectorTimeStamp extends TimeStamp {
     }
 
     @Override
-    public int compareTo(Object anotherVectorTimeStamp) {
-        return 0;
+    public comparision compareTo(Object anotherVectorTimeStamp) {
+        Boolean equal = true;
+        Boolean less = true;
+        Boolean greater = true;
+        for (int i = 0; i < this.value.size(); i++)
+        {
+          if (this.value.get(i).intValue() > ((VectorTimeStamp)anotherVectorTimeStamp).value.get(i).intValue())
+          {
+              less = false;
+              equal = false;
+          }
+          if (this.value.get(i).intValue() < ((VectorTimeStamp)anotherVectorTimeStamp).value.get(i).intValue())
+          {
+              greater = false;
+              equal = false;
+          }
+        }
+        if (less)
+            return comparision.lesser;
+        if (greater)
+            return comparision.greater;
+        if (equal)
+           return comparision.equal;
+        return comparision.parallel;
     }
 
     public ArrayList<AtomicInteger> getValue() {

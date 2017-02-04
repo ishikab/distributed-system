@@ -7,9 +7,13 @@ import java.io.Serializable;
 /**
  * Created by wcx73 on 2017/2/1.
  */
-public abstract class TimeStamp implements Serializable, Cloneable, Comparable<Object>{
+public abstract class TimeStamp implements Serializable, Cloneable {
+    public enum comparision {
+        lesser, greater, equal, parallel
+    }
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+    public abstract comparision compareTo(Object anotherTimeStamp);
 }

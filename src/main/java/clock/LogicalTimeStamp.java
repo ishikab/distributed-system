@@ -21,8 +21,12 @@ public class LogicalTimeStamp extends TimeStamp {
         return currentTimeStamp;
     }
     @Override
-    public int compareTo(Object anotherTimeStamp) {
-        return this.value.get() - ((LogicalTimeStamp)anotherTimeStamp).value.get();
+    public comparision compareTo(Object anotherTimeStamp) {
+        if (this.value.get() < ((LogicalTimeStamp)anotherTimeStamp).value.get())
+            return comparision.lesser;
+        if (this.value.get() > ((LogicalTimeStamp)anotherTimeStamp).value.get())
+            return comparision.greater;
+        return comparision.equal;
     }
 
     public void setValue(int val) {
