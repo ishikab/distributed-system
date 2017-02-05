@@ -21,7 +21,7 @@ public class Node {
 
     Node(LinkedHashMap data) {
         this.name = (String) data.get("name");
-        this.IP = (String) data.get("IP");
+        this.IP = (String) data.get("ip");
         this.port = (Integer) data.get("port");
         this.nodeId = nodeIdGenerator;
         nodeIdGenerator++;
