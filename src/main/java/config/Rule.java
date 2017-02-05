@@ -57,22 +57,16 @@ public class Rule {
         if (this.kind != null) {
             if (!kind.equals(message.getKind())) return false;
         }
-        if (this.seqNum != null) {
-            if (this.action == Action.DROP && !this.seqNum.equals(0))
-                return false;
-            else if (this.action == Action.DROP_AFTER && this.seqNum > message.getSeqNum())
-                return false;
+         if (this.action == Action.DROP_AFTER) {
+          if (this.seqNum != null) {
+            if (seqNum > message.getSeqNum()) return false;
+          }
         }
-//         if (this.action == Action.DROP_AFTER) {
-//          if (this.seqNum >= 0) {
-//            if (seqNum > message.getSeqNum()) return false;
-//          }
-//        }
-//        else {
-//          if (this.seqNum >= 0) {
-//            if (seqNum != message.getSeqNum()) return false;
-//          }
-//        }
+        else {
+          if (this.seqNum != null) {
+            if (seqNum != message.getSeqNum()) return false;
+          }
+        }
         if (this.isDuplicate != null)
             if (!message.isDuplicate().equals(this.isDuplicate)) return false;
         LogUtil.info(message);
