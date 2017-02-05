@@ -28,11 +28,11 @@ import java.lang.InterruptedException;
  */
 public class DriverLogger {
     public static void main(String[] args) throws IOException, InterruptedException {
-        LogUtil.log("Welcome to 18-842 Distributed Systems lab project logger");
+        LogUtil.log("Welcome to 18-842 Distributed Systems lab1 logger");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String localName, configFileName, mode;
         if (args.length == 0) {
-            System.out.print("Please enter local name:: ");
+            System.out.print("Please enter logger node name:: ");
             localName = br.readLine();
             System.out.print("Please enter the name of configuration file:: ");
             configFileName = br.readLine();
@@ -65,7 +65,6 @@ public class DriverLogger {
                     TimeStampedMessage message;
                     message = (TimeStampedMessage) (messagePasser.receive());
                     if (message != null) {
-                        LogUtil.log(message);
                         LogUtil.addMessageToLogger(message);
                     }
                 }
@@ -74,11 +73,11 @@ public class DriverLogger {
         t.start();
         while (true) {
             try {
-                System.out.print("Do you want to write log?::");
+                System.out.print("Do you want to write log, type yes::");
                 switch (br.readLine()) {
                     case "yes":
-                        System.out.println("Logger writing logs");
                         LogUtil.writeLogger();
+                        TimeUnit.MINUTES.sleep(1);
                     default:
                         TimeUnit.MINUTES.sleep(1);
 
@@ -87,9 +86,6 @@ public class DriverLogger {
                 e.printStackTrace();
                 break;
             }
-
-            System.out.println("Logger writing logs");
-            LogUtil.writeLogger();
         }
 
     }
