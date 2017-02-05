@@ -120,7 +120,7 @@ public class LogUtil {
                 cachedMsg = msg;
             }
             file.close();
-            loggerMsgs.clear();
+            //loggerMsgs.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }
