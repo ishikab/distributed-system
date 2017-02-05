@@ -26,7 +26,7 @@ public class LogicalTimeStamp extends TimeStamp {
             return comparision.lesser;
         if (this.value.get() > ((LogicalTimeStamp)anotherTimeStamp).value.get())
             return comparision.greater;
-        return comparision.equal;
+        return comparision.parallel;
     }
 
     public void setValue(int val) {
