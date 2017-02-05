@@ -116,6 +116,7 @@ public class LogUtil {
                     }
                 }
                 output = output + "\n\n";
+                System.out.print(output);
                 file.write(output);
                 cachedMsg = msg;
             }
