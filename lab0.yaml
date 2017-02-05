@@ -1,6 +1,9 @@
 # Lab0 Demo Yaml
 
 configuration :
+#  - name : logger
+#    ip   : localhost
+#    port : 60000
   - name : america
     ip   : localhost
     port : 12344

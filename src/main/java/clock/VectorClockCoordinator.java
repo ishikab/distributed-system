@@ -44,15 +44,14 @@ public class VectorClockCoordinator extends ClockCoordinator {
     public void updateTime(TimeStamp timeStamp) {
         if (timeStamp instanceof VectorTimeStamp) {
             ArrayList<AtomicInteger> localTime = getStatus();
-            LogUtil.debug("local:  " + localTime);
             ArrayList<AtomicInteger> remoteTime = ((VectorTimeStamp) timeStamp).getValue();
-            LogUtil.debug("remote: " + remoteTime);
+            LogUtil.debug("local:  " + localTime + " remote: " + remoteTime);
             for (int i = 0; i < localTime.size(); i++) {
                 int newTime = Math.max(localTime.get(i).get(), remoteTime.get(i).get());
                 localTime.get(i).set(newTime);
             }
             localTime.get(localNodeId).addAndGet(1);
-            LogUtil.info(String.format("%s", getStatus()));
+            LogUtil.debug(String.format("new state: %s", getStatus()));
         } else {
             LogUtil.error("Inconsistent time stamp type, should be VectorTimeStamp");
         }

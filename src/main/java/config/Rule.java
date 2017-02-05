@@ -46,8 +46,6 @@ public class Rule {
     }
 
     public boolean matches(Message message) {
-        if (this.isDuplicate != null && !this.isDuplicate && this.action == Action.DUPLICATE)
-            LogUtil.info("here");
         if (this.src != null) {
             if (!src.equals(message.getSrc())) return false;
         }
@@ -69,8 +67,6 @@ public class Rule {
         }
         if (this.isDuplicate != null)
             if (!message.isDuplicate().equals(this.isDuplicate)) return false;
-        LogUtil.info(message);
-        LogUtil.info(this);
         return true;
     }
 
