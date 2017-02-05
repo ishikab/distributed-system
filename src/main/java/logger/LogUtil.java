@@ -75,6 +75,10 @@ public class LogUtil {
             int i = 0;
             while (i < loggerMsgs.size()) {
                 if ((loggerMsgs.get(i).getTimeStamp()).compareTo(msg.getTimeStamp()) == TimeStamp.comparision.greater) {
+                    if (i == 0) {
+                      loggerMsgs.add(i-1, msg);
+                      return;
+                    }
                     loggerMsgs.add(i-1, msg);
                     return;
                 }
@@ -89,7 +93,7 @@ public class LogUtil {
         try {
             BufferedWriter file = new BufferedWriter(new FileWriter(fileName, true));
             file.write("\nWritting logs\n");
-            file.write("\nIf messages are not parallel they appear in increasing order\n");
+            file.write("\nIf messages are not parallel they appear in increasing order\n\n");
 
             for (TimeStampedMessage msg : loggerMsgs) {
                 if (cachedMsg != null) {
@@ -103,9 +107,12 @@ public class LogUtil {
                 }
                 String output = "Message :: " + msg;
                 for (TimeStampedMessage msg1 : loggerMsgs) {
-                    TimeStamp.comparision order = msg1.getTimeStamp().compareTo(msg.getTimeStamp());
-                    if (order == TimeStamp.comparision.parallel) {
-                        output = output + "\nParallel with " + msg1;
+                    if (!msg.equals(msg1))
+                    {
+                      TimeStamp.comparision order = msg1.getTimeStamp().compareTo(msg.getTimeStamp());
+                      if (order == TimeStamp.comparision.parallel) {
+                          output = output + "\nParallel with " + msg1;
+                      }
                     }
                 }
                 output = output + "\n\n";
