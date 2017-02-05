@@ -24,10 +24,10 @@ public class VectorTimeStamp extends TimeStamp {
 
     @SuppressWarnings("unchecked")
     public VectorTimeStamp() {
+        incrementTime();
         for(AtomicInteger nodeTimeStamp: currentTimeStamp) {
             this.value.add(new AtomicInteger(nodeTimeStamp.intValue()));
         }
-        incrementTime();
     }
 
     public static void initVectorTimeStamp(int id) {

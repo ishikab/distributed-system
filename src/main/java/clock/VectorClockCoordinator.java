@@ -45,7 +45,7 @@ public class VectorClockCoordinator extends ClockCoordinator {
         if (timeStamp instanceof VectorTimeStamp) {
             ArrayList<AtomicInteger> localTime = getStatus();
             ArrayList<AtomicInteger> remoteTime = ((VectorTimeStamp) timeStamp).getValue();
-            LogUtil.debug("local:  " + localTime + " remote: " + remoteTime);
+            LogUtil.debug("local: " + localTime + ", remote: " + remoteTime);
             for (int i = 0; i < localTime.size(); i++) {
                 int newTime = Math.max(localTime.get(i).get(), remoteTime.get(i).get());
                 localTime.get(i).set(newTime);
