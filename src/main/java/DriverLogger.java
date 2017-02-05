@@ -65,8 +65,6 @@ public class DriverLogger {
                     TimeStampedMessage message;
                     message = (TimeStampedMessage) (messagePasser.receive());
                     if (message != null) {
-                        if (message instanceof TimeStampedMessage)
-                            clockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
                         LogUtil.log(message);
                         LogUtil.addMessageToLogger(message);
                     }

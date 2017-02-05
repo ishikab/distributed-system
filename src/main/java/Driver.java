@@ -55,8 +55,8 @@ public class Driver {
                         break;
                     case "receive":
                         message = messagePasser.receive();
-                        if (message instanceof TimeStampedMessage)
-                            clockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
+                        //if (message instanceof TimeStampedMessage)
+                        //    iclockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
                         if (message == null) LogUtil.log("No new message");
                         else LogUtil.log(message);
                         break;

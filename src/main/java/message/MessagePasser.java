@@ -1,5 +1,5 @@
 package message;
-
+import clock.ClockCoordinator;
 import config.Configuration;
 import config.Node;
 import config.Rule;
@@ -28,6 +28,8 @@ public class MessagePasser implements MessageReceiveCallback {
     private String IP;
     private Integer port;
     private MessageListenerThread listenerThread;
+    ClockCoordinator clockCoordinator;
+    
 
     @SuppressWarnings("unchecked")
     public MessagePasser(String configFileName, String localName) {
@@ -39,6 +41,7 @@ public class MessagePasser implements MessageReceiveCallback {
         LogUtil.info(self);
         this.IP = self.getIP();
         this.port = self.getPort();
+        clockCoordinator = ClockCoordinator.getInstance();
 //        checkNodeInfo();
         listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
@@ -161,6 +164,7 @@ public class MessagePasser implements MessageReceiveCallback {
         while (this.receiveDelayMessageQueue.peek() != null) {
             this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
         }
+        clockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
         return message;
     }
 
