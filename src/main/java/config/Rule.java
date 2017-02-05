@@ -60,7 +60,9 @@ public class Rule {
           }
         }
         else {
+          if (this.seqNum >= 0) {            
             if (seqNum != message.getSeqNum()) return false;
+          }
         }
         if (this.isDuplicate) {
             if (!message.isDuplicate()) return false;
