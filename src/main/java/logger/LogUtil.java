@@ -86,12 +86,12 @@ public class LogUtil {
 
     public static void writeLogger() {
         try {
-            FileWriter file = new FileWriter(fileName, true);
-            PrintWriter fileout = new PrintWriter(new BufferedWriter(file));
-            System.out.println(loggerMsgs);
+            BufferedWriter file = new BufferedWriter(new FileWriter(fileName, true));
+            file.write("\nWritting logs\n");
             for (TimeStampedMessage msg : loggerMsgs) {
                 if (cachedMsg != null) {
                     TimeStamp.comparision order = msg.getTimeStamp().compareTo(cachedMsg.getTimeStamp());
+                    System.out.println(order);
                     if (order == TimeStamp.comparision.parallel) {
                         concurrentMsgNum = concurrentMsgNum + 1;
                     } else if (order == TimeStamp.comparision.greater) {
@@ -100,8 +100,17 @@ public class LogUtil {
                     }
                 }
                 String output = msgOrder(msgNum, concurrentMsgNum) + msg;
-                fileout.println(output);
-                System.out.println(output);
+                if (cachedMsg != null)
+                {
+                if (concurrentMsgNum != 0) { 
+                    output = output + "\nParallel with " + cachedMsg;
+                }
+                else {
+                    output = output + "\nComes after " + cachedMsg;
+                }
+                }
+                output = output + "\n\n";
+                file.write(output);
                 cachedMsg = msg;
             }
             file.close();
