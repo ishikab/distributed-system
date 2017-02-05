@@ -34,6 +34,7 @@ public class VectorTimeStamp extends TimeStamp {
         nodeId = id;
         for (int i = 0; i < Configuration.getNumNodes(); i++)
             currentTimeStamp.add(new AtomicInteger(0));
+        currentTimeStamp.get(id).addAndGet(1);
     }
 
     public static void incrementTime() {

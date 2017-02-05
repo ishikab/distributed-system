@@ -4,6 +4,7 @@ import logger.LogUtil;
 import message.Message;
 import message.MessagePasser;
 import message.TimeStampedMessage;
+
 import java.util.Scanner;
 
 import java.io.BufferedReader;
@@ -47,9 +48,9 @@ public class DriverLogger {
             mode = args[2];
             LogUtil.info("Reading from command line args");
         }
-        if(mode.toLowerCase().equals("logical"))
+        if (mode.toLowerCase().equals("logical"))
             ClockCoordinator.setClockType(ClockCoordinator.ClockType.LOGICAL);
-        else if(mode.toLowerCase().equals("vector"))
+        else if (mode.toLowerCase().equals("vector"))
             ClockCoordinator.setClockType(ClockCoordinator.ClockType.VECTOR);
         else {
             LogUtil.log("Invalid clock type, setting default vector");
@@ -60,20 +61,20 @@ public class DriverLogger {
         LogUtil.setLogFile("log");
         Thread t = new Thread() {
             public void run() {
+                while (true) {
+                    TimeStampedMessage message;
+                    message = (TimeStampedMessage) (messagePasser.receive());
+                    if (message != null) {
+                        if (message instanceof TimeStampedMessage)
+                            clockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
+                        LogUtil.log(message);
+                        LogUtil.addMessageToLogger(message);
+                    }
+                }
+            }
+        };
+        t.start();
         while (true) {
-                TimeStampedMessage message;
-                message = (TimeStampedMessage)(messagePasser.receive());
-                if (message != null) {
-                  if (message instanceof TimeStampedMessage)
-                  clockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
-                  LogUtil.log(message);
-                  LogUtil.addMessageToLogger(message); 
-               }
-        }
-     }
-    };
-    t.start();
-    while(true){
             try {
                 System.out.print("Do you want to write log?::");
                 switch (br.readLine()) {
@@ -82,15 +83,15 @@ public class DriverLogger {
                         LogUtil.writeLogger();
                     default:
                         TimeUnit.MINUTES.sleep(1);
-                        
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
             }
 
-        	System.out.println("Logger writing logs");
-        	LogUtil.writeLogger();
+            System.out.println("Logger writing logs");
+            LogUtil.writeLogger();
         }
 
     }

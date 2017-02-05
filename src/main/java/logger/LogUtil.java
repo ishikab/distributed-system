@@ -8,24 +8,29 @@ package logger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import message.TimeStampedMessage;
+
 import java.io.*;
 import java.util.Scanner;
+
 import clock.TimeStamp;
 
 public class LogUtil {
     private static final Logger logger = LoggerFactory.getLogger(LogUtil.class);
-    private static String fileName; 
+    private static String fileName;
     private static List<TimeStampedMessage> loggerMsgs = new ArrayList<TimeStampedMessage>();
     private static TimeStampedMessage cachedMsg = null;
     private static int msgNum = 0;
-    private static int concurrentMsgNum = 0; 
-   
-    public Logger getLogger(){
+    private static int concurrentMsgNum = 0;
+
+    public Logger getLogger() {
         return logger;
     }
+
     public static void log(Object message) {
         System.out.println(message.toString());
     }
@@ -38,7 +43,11 @@ public class LogUtil {
         logger.debug(message.toString());
     }
 
-    private static void logWithIndent(Object message) {log("  " + message.toString());};
+    private static void logWithIndent(Object message) {
+        log("  " + message.toString());
+    }
+
+    ;
 
     @SuppressWarnings("unchecked")
     public static void logIterable(String title, Iterable iterable) {
@@ -54,59 +63,57 @@ public class LogUtil {
         logger.error(message.toString());
         System.exit(Integer.MIN_VALUE);
     }
-    public static void setLogFile(String name)
-    {
+
+    public static void setLogFile(String name) {
         fileName = name;
-    } 
+    }
+
     public static void addMessageToLogger(TimeStampedMessage msg) {
-        if(loggerMsgs.isEmpty()) {
+        if (loggerMsgs.isEmpty()) {
             loggerMsgs.add(msg);
-        }
-        else {
+        } else {
             int i = 0;
-            while(i < loggerMsgs.size()) {
-                if((loggerMsgs.get(i).getTimeStamp()).compareTo(msg.getTimeStamp()) != TimeStamp.comparision.lesser) {
-                   loggerMsgs.add(i, msg);
-                   return;
+            while (i < loggerMsgs.size()) {
+                if ((loggerMsgs.get(i).getTimeStamp()).compareTo(msg.getTimeStamp()) != TimeStamp.comparision.lesser) {
+                    loggerMsgs.add(i, msg);
+                    return;
                 }
                 i++;
-	    }
-	    loggerMsgs.add(msg);
+            }
+            loggerMsgs.add(msg);
         }
     }
-   
+
     public static void writeLogger() {
         try {
             FileWriter file = new FileWriter(fileName, true);
             PrintWriter fileout = new PrintWriter(new BufferedWriter(file));
-	    System.out.println(loggerMsgs);
-	    for(TimeStampedMessage msg: loggerMsgs) {
-	        if(cachedMsg != null) {
+            System.out.println(loggerMsgs);
+            for (TimeStampedMessage msg : loggerMsgs) {
+                if (cachedMsg != null) {
                     TimeStamp.comparision order = msg.getTimeStamp().compareTo(cachedMsg.getTimeStamp());
-		    if (order == TimeStamp.comparision.parallel) {
+                    if (order == TimeStamp.comparision.parallel) {
                         concurrentMsgNum = concurrentMsgNum + 1;
-                    }
-                    else if (order == TimeStamp.comparision.greater) {
+                    } else if (order == TimeStamp.comparision.greater) {
                         concurrentMsgNum = 0;
                         msgNum++;
-		    }
-	        }
-	    String output = msgOrder(msgNum, concurrentMsgNum) + msg;
-	    fileout.println(output);
-	    System.out.println(output);
-	    cachedMsg = msg;
-	    }
-	    file.close();
+                    }
+                }
+                String output = msgOrder(msgNum, concurrentMsgNum) + msg;
+                fileout.println(output);
+                System.out.println(output);
+                cachedMsg = msg;
+            }
+            file.close();
             loggerMsgs.clear();
-	} 
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-	
-	private static String msgOrder(int mNum, int cNum){
-		if(cNum == 0) 
-                    return "Number ("  + mNum + ") ";
-		return "Number ("  + mNum + "[" + cNum + "] ) ";
-	}
+
+    private static String msgOrder(int mNum, int cNum) {
+        if (cNum == 0)
+            return "Number (" + mNum + ") ";
+        return "Number (" + mNum + "[" + cNum + "] ) ";
+    }
 }
