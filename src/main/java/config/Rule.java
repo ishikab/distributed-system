@@ -54,8 +54,13 @@ public class Rule {
         if (this.kind != null) {
             if (!kind.equals(message.getKind())) return false;
         }
-        if (this.seqNum >= 0) {
+         if (this.action == Action.DROP_AFTER) {
+          if (this.seqNum >= 0) {
             if (seqNum > message.getSeqNum()) return false;
+          }
+        }
+        else {
+            if (seqNum != message.getSeqNum()) return false;
         }
         if (this.isDuplicate) {
             if (!message.isDuplicate()) return false;
