@@ -96,8 +96,12 @@ public class MessagePasser implements MessageReceiveCallback {
                 }
             }
             directSend(message);
-            if (duplicateMessage)
-                directSend(message.clone());
+            if (duplicateMessage) {
+                Message clonedMessage = message.clone();
+                clonedMessage.setDuplicate(true);
+                directSend(clonedMessage);
+            }
+
             while (sendDelayMessageQueue.peek() != null) {
                 directSend(sendDelayMessageQueue.poll());
             }
@@ -107,7 +111,7 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     private void directSend(Message message) throws IOException {
-        Node destNode = this.configuration.nodeMap.getOrDefault(message.getDest(), null);
+        Node destNode = Configuration.nodeMap.getOrDefault(message.getDest(), null);
         if (destNode == null) {
             LogUtil.error("dest not found");
             return;
@@ -124,7 +128,7 @@ public class MessagePasser implements MessageReceiveCallback {
     @Override
     public void handleMessage(Message message) {
         //LogUtil.log(message);
-        for (Rule rule : this.configuration.receiveRules) {
+        for (Rule rule : Configuration.receiveRules) {
             if (rule.matches(message)) {
                 LogUtil.log("found rule match: " + rule);
                 LogUtil.log(String.format("[%s] %s", rule.action, message));
@@ -139,7 +143,6 @@ public class MessagePasser implements MessageReceiveCallback {
                     case DUPLICATE:
                         this.receiveMessagesQueue.add(message);
                         this.receiveMessagesQueue.add(message.clone());
-
                         break;
                     case DELAY:
                         this.receiveDelayMessageQueue.add(message);

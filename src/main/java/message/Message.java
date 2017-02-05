@@ -79,14 +79,12 @@ public class Message implements Serializable, Cloneable {
     }
 
     protected Message clone() {
-        Message message = null;
         try {
-            message = (Message) super.clone();
-            message.isDuplicate = true;
+            return (Message) super.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
-        return message;
+        return null;
     }
 
     public void setSource(String source) {

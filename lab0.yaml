@@ -1,0 +1,68 @@
+# Lab0 Demo Yaml
+
+configuration :
+  - name : america
+    ip   : localhost
+    port : 12344
+  - name : brazil
+    ip   : localhost
+    port : 14255
+  - name : china
+    ip   : localhost
+    port : 12998
+  - name : denmark
+    ip   : localhost
+    port : 1987
+
+sendRules :
+  - action : delay 
+    src    : america
+    dest   : denmark
+    kind   : black
+  - action : drop 
+    src    : brazil
+    dest   : china
+    kind   : white
+    seqNum : 3
+  - action : dropAfter 
+    kind   : black
+    src    : china
+    dest   : america
+    seqNum : 3
+  - action : drop 
+    kind   : white
+    dest   : brazil
+  - action : duplicate 
+    src    : denmark
+
+
+
+receiveRules :
+  - action : drop
+    dest   : america
+    duplicate : True
+  - action : dropAfter 
+    src    : denmark 
+    kind   : black
+    seqNum : 2 
+    duplicate : True
+    dest   : brazil
+  - action : duplicate
+    dest   : china
+    src    : denmark
+    kind   : white
+    duplicate : True
+  - action : duplicate
+    dest   : china
+    src    : denmark
+    kind   : black
+    duplicate : False
+  - action : delay
+    dest   : denmark
+    src    : america
+    kind   : black
+  - action : dropAfter
+    kind   : black
+    seqNum : 5 
+
+

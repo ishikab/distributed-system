@@ -46,4 +46,5 @@ public abstract class ClockCoordinator {
     public abstract Object getStatus();
 
     public abstract void updateTime(TimeStamp timeStamp);
+
 }
