@@ -77,7 +77,7 @@ public class DriverLogger {
                 switch (br.readLine()) {
                     case "yes":
                         LogUtil.writeLogger();
-                        TimeUnit.MINUTES.sleep(1);
+                        continue;
                     default:
                         TimeUnit.MINUTES.sleep(1);
 
