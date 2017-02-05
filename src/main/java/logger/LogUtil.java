@@ -74,8 +74,8 @@ public class LogUtil {
         } else {
             int i = 0;
             while (i < loggerMsgs.size()) {
-                if ((loggerMsgs.get(i).getTimeStamp()).compareTo(msg.getTimeStamp()) != TimeStamp.comparision.lesser) {
-                    loggerMsgs.add(i, msg);
+                if ((loggerMsgs.get(i).getTimeStamp()).compareTo(msg.getTimeStamp()) == TimeStamp.comparision.greater) {
+                    loggerMsgs.add(i-1, msg);
                     return;
                 }
                 i++;
@@ -85,13 +85,15 @@ public class LogUtil {
     }
 
     public static void writeLogger() {
+        
         try {
             BufferedWriter file = new BufferedWriter(new FileWriter(fileName, true));
             file.write("\nWritting logs\n");
+            file.write("\nIf messages are not parallel they appear in increasing order\n");
+
             for (TimeStampedMessage msg : loggerMsgs) {
                 if (cachedMsg != null) {
                     TimeStamp.comparision order = msg.getTimeStamp().compareTo(cachedMsg.getTimeStamp());
-                    System.out.println(order);
                     if (order == TimeStamp.comparision.parallel) {
                         concurrentMsgNum = concurrentMsgNum + 1;
                     } else if (order == TimeStamp.comparision.greater) {
@@ -99,15 +101,12 @@ public class LogUtil {
                         msgNum++;
                     }
                 }
-                String output = msgOrder(msgNum, concurrentMsgNum) + msg;
-                if (cachedMsg != null)
-                {
-                if (concurrentMsgNum != 0) { 
-                    output = output + "\nParallel with " + cachedMsg;
-                }
-                else {
-                    output = output + "\nComes after " + cachedMsg;
-                }
+                String output = "Message :: " + msg;
+                for (TimeStampedMessage msg1 : loggerMsgs) {
+                    TimeStamp.comparision order = msg1.getTimeStamp().compareTo(msg.getTimeStamp());
+                    if (order == TimeStamp.comparision.parallel) {
+                        output = output + "\nParallel with " + msg1;
+                    }
                 }
                 output = output + "\n\n";
                 file.write(output);
