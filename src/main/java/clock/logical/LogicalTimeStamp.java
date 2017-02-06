@@ -10,7 +10,8 @@ public class LogicalTimeStamp extends TimeStamp {
     private AtomicInteger value = new AtomicInteger(0);
 
     public LogicalTimeStamp() {
-        this.value.set(currentTimeStamp.getAndAdd(1));
+        currentTimeStamp.getAndAdd(1);
+        this.value.set(currentTimeStamp.get());
         LogUtil.debug(this);
     }
 
