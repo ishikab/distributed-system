@@ -1,14 +1,17 @@
-import clock.ClockService;
+import clock.ClockCoordinator;
+import clock.LogicalTimeStamp;
 import logger.LogUtil;
+import message.Message;
 import message.MessagePasser;
 import message.TimeStampedMessage;
 
+import java.util.Scanner;
+
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.lang.InterruptedException;
 /*
  * 18-842 Distributed Systems Team 6
  * Chenxi Wang (chenxi.wang@sv.cmu.edu)
@@ -25,69 +28,65 @@ import java.util.Date;
  */
 public class DriverLogger {
     public static void main(String[] args) throws IOException, InterruptedException {
-        LogUtil.println("Welcome to 18-842 Distributed Systems lab1 logger");
+        LogUtil.log("Welcome to 18-842 Distributed Systems lab1 logger");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String localName, configFileName, mode;
-        if (args.length < 3) {
-            LogUtil.print("Please enter logger node name:: ");
+        if (args.length == 0) {
+            System.out.print("Please enter logger node name:: ");
             localName = br.readLine();
-            LogUtil.print("Please enter the name of configuration file:: ");
+            System.out.print("Please enter the name of configuration file:: ");
             configFileName = br.readLine();
             if (configFileName.equals("")) {
                 LogUtil.info("using default config file ./config.yaml");
                 configFileName = "config.yaml";
             }
-            LogUtil.print("Please enter clock type [logical/vector]:: ");
+            System.out.print("Please enter clock type [logical/vector]:: ");
             mode = br.readLine();
         } else {
             localName = args[1];
             configFileName = args[0];
             mode = args[2];
-            LogUtil.info("Reading from CLI");
+            LogUtil.info("Reading from command line args");
         }
-        switch (mode.toLowerCase()) {
-            case "logical":
-                ClockService.setClockType(ClockService.ClockType.LOGICAL);
-                break;
-            case "vector":
-                ClockService.setClockType(ClockService.ClockType.VECTOR);
-                break;
-            default:
-                LogUtil.error("Unsupported Clock Type: " + mode);
+        if (mode.toLowerCase().equals("logical"))
+            ClockCoordinator.setClockType(ClockCoordinator.ClockType.LOGICAL);
+        else if (mode.toLowerCase().equals("vector"))
+            ClockCoordinator.setClockType(ClockCoordinator.ClockType.VECTOR);
+        else {
+            LogUtil.log("Invalid clock type, setting default vector");
         }
 
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
-//        ClockService clockCoordinator = ClockService.getInstance();
-        SimpleDateFormat sdfDate = new SimpleDateFormat("HH_mm");
-        new File("println").mkdir();
-        LogUtil.setLogFile("println/logfile_" + sdfDate.format(new Date()));
-        Thread t = new Thread(() -> {
-            while (true) {
-                TimeStampedMessage message = (TimeStampedMessage) (messagePasser.receive());
-                if (message != null) LogUtil.addMessageToLogger(message);
+        ClockCoordinator clockCoordinator = ClockCoordinator.getInstance();
+        LogUtil.setLogFile("log");
+        Thread t = new Thread() {
+            public void run() {
+                while (true) {
+                    TimeStampedMessage message;
+                    message = (TimeStampedMessage) (messagePasser.receive());
+                    if (message != null) {
+                        LogUtil.addMessageToLogger(message);
+                    }
+                }
             }
-        });
+        };
         t.start();
-        boolean logToStdOut = true;
-        LogUtil.info("Logging target: STDOUT");
         while (true) {
             try {
-                LogUtil.print("Please enter [switch/println]>>> ");
-                switch (br.readLine().trim().toLowerCase()) {
-                    case "switch":
-                        logToStdOut = !logToStdOut;
-                        LogUtil.info("Now Logging to:" + (logToStdOut ? "STDOUT" : "FILE"));
-                        break;
-                    case "print":
-                        LogUtil.writeLogger(logToStdOut);
-                        break;
+                System.out.print("Do you want to write log, type yes::");
+                switch (br.readLine()) {
+                    case "yes":
+                        LogUtil.writeLogger();
+                        continue;
                     default:
-//                        TimeUnit.MINUTES.sleep(1);
+                        TimeUnit.MINUTES.sleep(1);
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
             }
         }
+
     }
 }

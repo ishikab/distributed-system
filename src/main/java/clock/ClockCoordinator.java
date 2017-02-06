@@ -7,34 +7,35 @@
 package clock;
 
 
-import clock.logical.LogicalClockService;
-import clock.vector.VectorClockService;
-
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static clock.ClockCoordinator.ClockType.LOGICAL;
+import static clock.ClockCoordinator.ClockType.VECTOR;
 
 /**
  * Created by chenxiw on 2/2/17.
  * chenxi.wang@sv.cmu.edu
  */
-public abstract class ClockService {
-    protected static Integer localNodeId;
-    private static ClockType clockType = null;
+public abstract class ClockCoordinator {
+    public enum ClockType {LOGICAL, VECTOR}
+    static Integer localNodeId;
+    static ClockType clockType = VECTOR;
 
     public static ClockType getClockType() {
         return clockType;
     }
 
     public static void setClockType(ClockType clockType) {
-        ClockService.clockType = clockType;
+        ClockCoordinator.clockType = clockType;
     }
 
-    public static ClockService getInstance() {
+    public static ClockCoordinator getInstance() {
         switch (clockType) {
             case VECTOR:
-                return VectorClockService.getInstance();
+                return VectorClockCoordinator.getInstance();
             case LOGICAL:
             default:
-                return LogicalClockService.getInstance();
+                return LogicalClockCoordinator.getInstance();
         }
     }
 
@@ -45,7 +46,5 @@ public abstract class ClockService {
     public abstract Object getStatus();
 
     public abstract void updateTime(TimeStamp timeStamp);
-
-    public enum ClockType {LOGICAL, VECTOR}
 
 }

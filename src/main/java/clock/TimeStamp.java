@@ -1,19 +1,19 @@
 package clock;
 
+import config.Configuration;
+
 import java.io.Serializable;
 
 /**
  * Created by wcx73 on 2017/2/1.
  */
 public abstract class TimeStamp implements Serializable, Cloneable {
+    public enum comparision {
+        lesser, greater, equal, parallel
+    }
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
-
-    public abstract Comparision compareTo(Object anotherTimeStamp);
-
-    public enum Comparision {
-        lesser, greater, equal, parallel
-    }
+    public abstract comparision compareTo(Object anotherTimeStamp);
 }

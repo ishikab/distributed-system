@@ -4,10 +4,8 @@
  * Ishika Batra (ibatra@andrew.cmu.edu)
  */
 
-package clock.logical;
+package clock;
 
-import clock.ClockService;
-import clock.TimeStamp;
 import logger.LogUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,16 +14,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by chenxiw on 2/2/17.
  * chenxi.wang@sv.cmu.edu
  */
-public class LogicalClockService extends ClockService {
-    private static LogicalClockService instance = new LogicalClockService();
-
-    private LogicalClockService() {
-//        this.timeStamp = new LogicalTimeStamp();
-        LogUtil.info("Creating Logical Clock Coordinator");
+public class LogicalClockCoordinator extends ClockCoordinator {
+    private static LogicalClockCoordinator instance = new LogicalClockCoordinator();
+    public static LogicalClockCoordinator getInstance() {
+        return instance;
     }
 
-    public static LogicalClockService getInstance() {
-        return instance;
+    private LogicalClockCoordinator() {
+//        this.timeStamp = new LogicalTimeStamp();
+        LogUtil.info("Creating Logical Clock Coordinator");
     }
 
     @Override
