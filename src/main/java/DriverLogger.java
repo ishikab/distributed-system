@@ -60,7 +60,7 @@ public class DriverLogger {
 //        ClockService clockCoordinator = ClockService.getInstance();
         SimpleDateFormat sdfDate = new SimpleDateFormat("HH_mm");
         new File("println").mkdir();
-        LogUtil.setLogFile("println/logfile_" + sdfDate.format(new Date()));
+//        LogUtil.setLogFile("println/logfile_" + sdfDate.format(new Date()));
         Thread t = new Thread(() -> {
             while (true) {
                 TimeStampedMessage message = (TimeStampedMessage) (messagePasser.receive());
@@ -72,7 +72,7 @@ public class DriverLogger {
         LogUtil.info("Logging target: STDOUT");
         while (true) {
             try {
-                LogUtil.print("Please enter [switch/println]>>> ");
+                LogUtil.print("Please enter [switch/print]>>> ");
                 switch (br.readLine().trim().toLowerCase()) {
                     case "switch":
                         logToStdOut = !logToStdOut;
