@@ -73,7 +73,7 @@ public class LogUtil {
             while (i < loggerMessages.size()) {
                 if ((loggerMessages.get(i).getTimeStamp()).compareTo(message.getTimeStamp()) == TimeStamp.Comparision.greater) {
                     if (i == 0) {
-                        loggerMessages.add(i - 1, message);
+                        loggerMessages.add(0, message);
                         return;
                     }
                     loggerMessages.add(i - 1, message);
