@@ -4,25 +4,27 @@
  * Ishika Batra (ibatra@andrew.cmu.edu)
  */
 
-package clock;
+package clock.vector;
 
+import clock.ClockService;
+import clock.TimeStamp;
 import config.Configuration;
 import logger.LogUtil;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class VectorClockCoordinator extends ClockCoordinator {
-    private static VectorClockCoordinator instance = new VectorClockCoordinator();
+public class VectorClockService extends ClockService {
+    private static VectorClockService instance = new VectorClockService();
 
-    public static VectorClockCoordinator getInstance() {
-        return instance;
-    }
-
-    private VectorClockCoordinator() {
+    private VectorClockService() {
         LogUtil.debug("Creating Vector Clock Coordinator");
         localNodeId = Configuration.nodeMap.get(Configuration.localName).getNodeId();
         VectorTimeStamp.initVectorTimeStamp(localNodeId);
+    }
+
+    public static VectorClockService getInstance() {
+        return instance;
     }
 
     @Override
@@ -45,13 +47,11 @@ public class VectorClockCoordinator extends ClockCoordinator {
         if (timeStamp instanceof VectorTimeStamp) {
             ArrayList<AtomicInteger> localTime = getStatus();
             ArrayList<AtomicInteger> remoteTime = ((VectorTimeStamp) timeStamp).getValue();
-            LogUtil.debug("local: " + localTime + ", remote: " + remoteTime);
             for (int i = 0; i < localTime.size(); i++) {
                 int newTime = Math.max(localTime.get(i).get(), remoteTime.get(i).get());
                 localTime.get(i).set(newTime);
             }
             localTime.get(localNodeId).addAndGet(1);
-            LogUtil.debug(String.format("new state: %s", getStatus()));
         } else {
             LogUtil.error("Inconsistent time stamp type, should be VectorTimeStamp");
         }

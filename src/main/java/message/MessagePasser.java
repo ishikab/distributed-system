@@ -1,5 +1,6 @@
 package message;
-import clock.ClockCoordinator;
+
+import clock.ClockService;
 import config.Configuration;
 import config.Node;
 import config.Rule;
@@ -24,12 +25,12 @@ public class MessagePasser implements MessageReceiveCallback {
     private final LinkedBlockingQueue<Message> receiveMessagesQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<Message> receiveDelayMessageQueue = new LinkedBlockingQueue<>();
     private final ConcurrentHashMap<String, AtomicInteger> seqNumMap = new ConcurrentHashMap<>();
+    ClockService clockService;
     private String localName;
     private String IP;
     private Integer port;
     private MessageListenerThread listenerThread;
-    ClockCoordinator clockCoordinator;
-    
+
 
     @SuppressWarnings("unchecked")
     public MessagePasser(String configFileName, String localName) {
@@ -41,7 +42,7 @@ public class MessagePasser implements MessageReceiveCallback {
         LogUtil.info(self);
         this.IP = self.getIP();
         this.port = self.getPort();
-        clockCoordinator = ClockCoordinator.getInstance();
+        clockService = ClockService.getInstance();
 //        checkNodeInfo();
         listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
@@ -79,8 +80,8 @@ public class MessagePasser implements MessageReceiveCallback {
             message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
             for (Rule rule : Configuration.sendRules) {
                 if (rule.matches(message)) {
-                    LogUtil.log("found match: " + rule);
-                    LogUtil.log(String.format("[%s] %s", rule.action, message));
+                    LogUtil.println("found match: " + rule);
+                    LogUtil.println(String.format("[%s] %s", rule.action, message));
                     switch (rule.action) {
                         case DROP:
                             return;
@@ -121,7 +122,7 @@ public class MessagePasser implements MessageReceiveCallback {
         }
         try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
             try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
-                LogUtil.log(message);
+                LogUtil.println(message);
                 out.writeObject(message);
                 out.flush();
             }
@@ -130,11 +131,11 @@ public class MessagePasser implements MessageReceiveCallback {
 
     @Override
     public void handleMessage(Message message) {
-        //LogUtil.log(message);
+        //LogUtil.println(message);
         for (Rule rule : Configuration.receiveRules) {
             if (rule.matches(message)) {
-                LogUtil.log("found rule match: " + rule);
-                LogUtil.log(String.format("[%s] %s", rule.action, message));
+                LogUtil.println("found rule match: " + rule);
+                LogUtil.println(String.format("[%s] %s", rule.action, message));
                 switch (rule.action) {
                     case DROP:
                         break;
@@ -164,7 +165,7 @@ public class MessagePasser implements MessageReceiveCallback {
         while (this.receiveDelayMessageQueue.peek() != null) {
             this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
         }
-        clockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
+        clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
         return message;
     }
 

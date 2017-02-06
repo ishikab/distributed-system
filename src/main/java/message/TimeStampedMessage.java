@@ -1,20 +1,18 @@
 package message;
 
-import clock.ClockCoordinator;
-import clock.LogicalTimeStamp;
+import clock.ClockService;
 import clock.TimeStamp;
-import clock.VectorTimeStamp;
-import logger.LogUtil;
+import clock.logical.LogicalTimeStamp;
+import clock.vector.VectorTimeStamp;
 
 import java.io.BufferedReader;
-import java.util.Calendar;
-import java.util.Comparator;
 
 public class TimeStampedMessage extends Message {
     private TimeStamp timeStamp;
+
     public TimeStampedMessage(String source, BufferedReader br) {
         super(source, br);
-        if (ClockCoordinator.getClockType() == ClockCoordinator.ClockType.LOGICAL)
+        if (ClockService.getClockType() == ClockService.ClockType.LOGICAL)
             this.timeStamp = new LogicalTimeStamp();
         else this.timeStamp = new VectorTimeStamp();
     }

@@ -17,8 +17,8 @@ public class Configuration {
     public static final LinkedList<Rule> sendRules = new LinkedList<>();
     public static final LinkedList<Rule> receiveRules = new LinkedList<>();
     public static String localName;
-    private String configurationFileName;
     private static Integer numNodes = null;
+    private String configurationFileName;
 
     public Configuration(String fileName) {
         this.configurationFileName = fileName;
