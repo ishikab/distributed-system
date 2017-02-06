@@ -92,6 +92,8 @@ public class LogUtil {
         } else {
             logger = eventLogger;
         }
+        logger.info("\nWritting logs\n");
+        logger.info("\nIf messages are not parallel they appear in increasing order\n\n");
         for (TimeStampedMessage msg : loggerMessages) {
             if (cachedMsg != null) {
                 TimeStamp.Comparision order = msg.getTimeStamp().compareTo(cachedMsg.getTimeStamp());
@@ -111,6 +113,7 @@ public class LogUtil {
                     }
                 }
             }
+            output = output + "\n\n";
             cachedMsg = msg;
             logger.info(output);
         }
