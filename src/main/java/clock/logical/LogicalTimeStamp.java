@@ -1,5 +1,6 @@
-package clock;
+package clock.logical;
 
+import clock.TimeStamp;
 import logger.LogUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,28 +14,33 @@ public class LogicalTimeStamp extends TimeStamp {
         LogUtil.debug(this);
     }
 
+    public static AtomicInteger getCurrentTimeStamp() {
+        return currentTimeStamp;
+    }
+
     public static void setCurrentTimeStamp(int value) {
         currentTimeStamp.set(value);
     }
 
-    public static AtomicInteger getCurrentTimeStamp() {
-        return currentTimeStamp;
-    }
-    @Override
-    public comparision compareTo(Object anotherTimeStamp) {
-        if (this.value.get() < ((LogicalTimeStamp)anotherTimeStamp).value.get())
-            return comparision.lesser;
-        if (this.value.get() > ((LogicalTimeStamp)anotherTimeStamp).value.get())
-            return comparision.greater;
-        return comparision.parallel;
+    public static void incrementTime() {
+        currentTimeStamp.addAndGet(1);
     }
 
-    public void setValue(int val) {
-        this.value.set(val);
+    @Override
+    public Comparision compareTo(Object anotherTimeStamp) {
+        if (this.value.get() < ((LogicalTimeStamp) anotherTimeStamp).value.get())
+            return Comparision.lesser;
+        if (this.value.get() > ((LogicalTimeStamp) anotherTimeStamp).value.get())
+            return Comparision.greater;
+        return Comparision.parallel;
     }
 
     public int getValue() {
         return this.value.get();
+    }
+
+    public void setValue(int val) {
+        this.value.set(val);
     }
 
     @Override
@@ -42,10 +48,6 @@ public class LogicalTimeStamp extends TimeStamp {
         return "LogicalTimeStamp{" +
                 "value=" + value +
                 '}';
-    }
-
-    public static void incrementTime() {
-        currentTimeStamp.addAndGet(1);
     }
 
 }

@@ -1,6 +1,5 @@
 package config;
 
-import logger.LogUtil;
 import message.Message;
 
 import java.util.LinkedHashMap;
@@ -13,6 +12,7 @@ public class Rule {
     public Action action = Action.NONE;
     private String src = null, dest = null, kind = null;
     private Boolean isDuplicate = null;
+
     Rule(LinkedHashMap<String, Object> data) {
         if (data.containsKey("src")) this.src = (String) data.get("src");
         if (data.containsKey("dest")) this.dest = (String) data.get("dest");
@@ -55,15 +55,14 @@ public class Rule {
         if (this.kind != null) {
             if (!kind.equals(message.getKind())) return false;
         }
-         if (this.action == Action.DROP_AFTER) {
-          if (this.seqNum != null) {
-            if (seqNum > message.getSeqNum()) return false;
-          }
-        }
-        else {
-          if (this.seqNum != null) {
-            if (seqNum != message.getSeqNum()) return false;
-          }
+        if (this.action == Action.DROP_AFTER) {
+            if (this.seqNum != null) {
+                if (seqNum > message.getSeqNum()) return false;
+            }
+        } else {
+            if (this.seqNum != null) {
+                if (seqNum != message.getSeqNum()) return false;
+            }
         }
         if (this.isDuplicate != null)
             if (!message.isDuplicate().equals(this.isDuplicate)) return false;

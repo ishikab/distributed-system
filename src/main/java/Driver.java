@@ -1,5 +1,4 @@
-import clock.ClockCoordinator;
-import clock.LogicalTimeStamp;
+import clock.ClockService;
 import logger.LogUtil;
 import message.Message;
 import message.MessagePasser;
@@ -14,7 +13,7 @@ import java.io.InputStreamReader;
  */
 public class Driver {
     public static void main(String[] args) throws IOException {
-        LogUtil.log("Welcome to 18-842 Distributed Systems lab project");
+        LogUtil.println("Welcome to 18-842 Distributed Systems lab project");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String localName, configFileName, mode;
         if (args.length == 0) {
@@ -34,16 +33,16 @@ public class Driver {
             mode = args[2];
             LogUtil.info("Reading from command line args");
         }
-        if(mode.toLowerCase().equals("logical"))
-            ClockCoordinator.setClockType(ClockCoordinator.ClockType.LOGICAL);
-        else if(mode.toLowerCase().equals("vector"))
-            ClockCoordinator.setClockType(ClockCoordinator.ClockType.VECTOR);
+        if (mode.toLowerCase().equals("logical"))
+            ClockService.setClockType(ClockService.ClockType.LOGICAL);
+        else if (mode.toLowerCase().equals("vector"))
+            ClockService.setClockType(ClockService.ClockType.VECTOR);
         else {
-            LogUtil.log("Invalid clock type, setting default vector");
+            LogUtil.println("Invalid clock type, setting default vector");
         }
 
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
-        ClockCoordinator clockCoordinator = ClockCoordinator.getInstance();
+        ClockService clockService = ClockService.getInstance();
         while (true) {
             try {
                 Message message;
@@ -57,11 +56,11 @@ public class Driver {
                         message = messagePasser.receive();
                         //if (message instanceof TimeStampedMessage)
                         //    iclockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
-                        if (message == null) LogUtil.log("No new message");
-                        else LogUtil.log(message);
+                        if (message == null) LogUtil.println("No new message");
+                        else LogUtil.println(message);
                         break;
                     case "exit":
-                        LogUtil.log("Thanks for using");
+                        LogUtil.println("Thanks for using");
                         System.exit(0);
                         break;
                     case "rules":
@@ -74,14 +73,14 @@ public class Driver {
                         messagePasser.updateConfiguration();
                         break;
                     case "time":
-                        LogUtil.log(clockCoordinator.getStatus());
+                        LogUtil.println(clockService.getStatus());
                         break;
                     case "play":
-                        clockCoordinator.doNothing();
-                        LogUtil.log("playing, local time +1s");
+                        clockService.doNothing();
+                        LogUtil.println("playing, local time +1s");
                         break;
                     default:
-                        LogUtil.log("available commands: send/receive/exit/rules/nodes/time");
+                        LogUtil.println("available commands: send/receive/exit/rules/nodes/time");
                         break;
                 }
             } catch (IOException e) {
