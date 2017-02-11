@@ -162,8 +162,11 @@ public class MessagePasser implements MessageReceiveCallback {
         if (receiveMessagesQueue.peek() == null)
             return null;
         Message message = receiveMessagesQueue.poll();
-        while (this.receiveDelayMessageQueue.peek() != null) {
-            this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
+        if (message != null)
+        {
+          while (this.receiveDelayMessageQueue.peek() != null) {
+              this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
+          }
         }
         clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
         return message;
