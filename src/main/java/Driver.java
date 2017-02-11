@@ -13,10 +13,10 @@ import java.io.InputStreamReader;
  */
 public class Driver {
     public static void main(String[] args) throws IOException {
-        LogUtil.println("Welcome to 18-842 Distributed Systems lab project");
+        LogUtil.println("Welcome to 18-842 Distributed Systems lab1 project");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String localName, configFileName, mode;
-        if (args.length == 0) {
+        if (args.length < 3) {
             System.out.print("Please enter local name:: ");
             localName = br.readLine();
             System.out.print("Please enter the name of configuration file:: ");
