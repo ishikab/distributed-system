@@ -30,7 +30,7 @@ public class MessagePasser implements MessageReceiveCallback {
     private String IP;
     private Integer port;
     private MessageListenerThread listenerThread;
-
+    boolean block = false;
 
     @SuppressWarnings("unchecked")
     public MessagePasser(String configFileName, String localName) {
@@ -140,29 +140,33 @@ public class MessagePasser implements MessageReceiveCallback {
                     case DROP:
                         break;
                     case DROP_AFTER:
-                        if (message.getSeqNum() <= rule.seqNum)
+                        if (message.getSeqNum() <= rule.seqNum) {
                             this.receiveMessagesQueue.add(message);
-
+                            this.block = false;
+                        }
                         break;
                     case DUPLICATE:
                         this.receiveMessagesQueue.add(message);
                         this.receiveMessagesQueue.add(message.clone());
+                        this.block = false;
                         break;
                     case DELAY:
                         this.receiveDelayMessageQueue.add(message);
+                        this.block = true;
                         break;
                 }
                 return;
             }
         }
         this.receiveMessagesQueue.add(message);
+        this.block = false;
     }
 
     public Message receive() {
         if (receiveMessagesQueue.peek() == null)
             return null;
         Message message = receiveMessagesQueue.poll();
-        if (message != null)
+        if (message != null && this.block != true)
         {
           while (this.receiveDelayMessageQueue.peek() != null) {
               this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
