@@ -22,9 +22,6 @@ public class LogUtil {
     private static final Logger eventLogger = LoggerFactory.getLogger("events");
     private static String logFileName = null;
     private static List<TimeStampedMessage> loggerMessages = new ArrayList<TimeStampedMessage>();
-    private static TimeStampedMessage cachedMsg = null;
-    private static int msgNum = 0;
-    private static int concurrentMsgNum = 0;
 
     public static void println(Object message) {
         System.out.println(message.toString());
@@ -92,18 +89,7 @@ public class LogUtil {
         } else {
             logger = eventLogger;
         }
-        logger.info("\nWritting logs\n");
-        logger.info("\nIf messages are not parallel they appear in increasing order\n\n");
         for (TimeStampedMessage msg : loggerMessages) {
-            if (cachedMsg != null) {
-                TimeStamp.Comparision order = msg.getTimeStamp().compareTo(cachedMsg.getTimeStamp());
-                if (order == TimeStamp.Comparision.parallel) {
-                    concurrentMsgNum = concurrentMsgNum + 1;
-                } else if (order == TimeStamp.Comparision.greater) {
-                    concurrentMsgNum = 0;
-                    msgNum++;
-                }
-            }
             String output = "Message :: " + msg;
             for (TimeStampedMessage msg1 : loggerMessages) {
                 if (!msg.equals(msg1)) {
@@ -111,57 +97,18 @@ public class LogUtil {
                     if (order == TimeStamp.Comparision.parallel) {
                         output = output + "\nParallel with " + msg1;
                     }
+                    else if (order == TimeStamp.Comparision.greater) {
+                        output = output + "\nHappens before " + msg1;
+                    }
+                    else if (order == TimeStamp.Comparision.lesser) {
+                        output = output + "\nHappens after " + msg1;
+                    }
                 }
             }
             output = output + "\n\n";
-            cachedMsg = msg;
             logger.info(output);
         }
 
-    }
-
-    public static void writeLogger() {
-        try {
-            eventLogger.info("write logger");
-            BufferedWriter file = new BufferedWriter(new FileWriter(logFileName, true));
-            file.write("\nWritting logs\n");
-            file.write("\nIf messages are not parallel they appear in increasing order\n\n");
-
-            for (TimeStampedMessage msg : loggerMessages) {
-                if (cachedMsg != null) {
-                    TimeStamp.Comparision order = msg.getTimeStamp().compareTo(cachedMsg.getTimeStamp());
-                    if (order == TimeStamp.Comparision.parallel) {
-                        concurrentMsgNum = concurrentMsgNum + 1;
-                    } else if (order == TimeStamp.Comparision.greater) {
-                        concurrentMsgNum = 0;
-                        msgNum++;
-                    }
-                }
-                String output = "Message :: " + msg;
-                for (TimeStampedMessage msg1 : loggerMessages) {
-                    if (!msg.equals(msg1)) {
-                        TimeStamp.Comparision order = msg1.getTimeStamp().compareTo(msg.getTimeStamp());
-                        if (order == TimeStamp.Comparision.parallel) {
-                            output = output + "\nParallel with " + msg1;
-                        }
-                    }
-                }
-                output = output + "\n\n";
-                System.out.print(output);
-                file.write(output);
-                cachedMsg = msg;
-            }
-            file.close();
-            //loggerMessages.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static String msgOrder(int mNum, int cNum) {
-        if (cNum == 0)
-            return "Number (" + mNum + ") ";
-        return "Number (" + mNum + "[" + cNum + "] ) ";
     }
 
     public Logger getLogger() {
