@@ -1,5 +1,20 @@
 # Lab0 Demo Yaml
 
+groups:
+    - name : Group1
+      members:
+         - china
+         - brazil
+    - name : Group2
+      members:
+         - america
+         - china
+         - denmark
+    - name : Group3
+      members:
+         - brazil
+         - denmark
+
 configuration :
   - name : logger
     ip   : localhost

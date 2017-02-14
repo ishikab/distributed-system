@@ -75,6 +75,9 @@ public class Driver {
                     case "time":
                         LogUtil.println(clockService.getStatus());
                         break;
+                    case "groups":
+                        messagePasser.listGroups();
+                        break;
                     case "play":
                         clockService.doNothing();
                         LogUtil.println("playing, local time +1s");

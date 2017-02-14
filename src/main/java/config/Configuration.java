@@ -14,11 +14,13 @@ import java.util.stream.Collectors;
 
 public class Configuration {
     public static final ConcurrentHashMap<String, Node> nodeMap = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<String, Group> groupMap = new ConcurrentHashMap<>();
     public static final LinkedList<Rule> sendRules = new LinkedList<>();
     public static final LinkedList<Rule> receiveRules = new LinkedList<>();
-    public static String localName;
+    public static String localName = null;
     private static Integer numNodes = null;
-    private String configurationFileName;
+    private static Integer numGroups = null;
+    private String configurationFileName = null;
 
     public Configuration(String fileName) {
         this.configurationFileName = fileName;
@@ -32,6 +34,12 @@ public class Configuration {
     public static Integer getNumNodes() {
         if (numNodes == null)
             LogUtil.fatalError("Read num nodes before initialization");
+        return numNodes;
+    }
+
+    public static Integer getNumGroups() {
+        if (numNodes == null)
+            LogUtil.fatalError("Read num groups before initialization");
         return numNodes;
     }
 
@@ -58,6 +66,7 @@ public class Configuration {
         receiveRules.clear();
         HashMap<String, ArrayList> dataMap = readConfiguration(this.configurationFileName);
         if (dataMap != null) {
+            // read configuration section
             ArrayList<LinkedHashMap<String, Object>> nodeConfig = dataMap.getOrDefault("configuration", null);
             if (nodeConfig != null) {
                 for (LinkedHashMap map : nodeConfig) {
@@ -68,6 +77,19 @@ public class Configuration {
                 }
                 numNodes = nodeMap.size();
             } else LogUtil.fatalError("configuration section not found");
+            // read groups section
+            ArrayList<LinkedHashMap<String, Object>> groupConfig = dataMap.getOrDefault("groups", null);
+            if (groupConfig != null) {
+                for (LinkedHashMap map: groupConfig) {
+                    String groupName = (String) map.get("name");
+                    if (groupName != null) {
+                        groupMap.put(groupName, new Group(map));
+                    }
+                }
+                numGroups = groupMap.size();
+            } else LogUtil.fatalError("groups section not found");
+
+
             ArrayList<LinkedHashMap<String, Object>> sendRulesConfig = dataMap.getOrDefault("sendRules", null);
             if (sendRulesConfig != null) {
                 sendRules.addAll(sendRulesConfig.stream().map(Rule::new).collect(Collectors.toList()));

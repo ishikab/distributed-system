@@ -214,4 +214,8 @@ public class MessagePasser implements MessageReceiveCallback {
     public void updateConfiguration() {
         this.configuration.updateConfiguration();
     }
+
+    public void listGroups() {
+        LogUtil.logIterable("Groups Info:", Configuration.groupMap.values());
+    }
 }
