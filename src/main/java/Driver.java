@@ -49,7 +49,13 @@ public class Driver {
                 System.out.print("send/receive/exit/rules/nodes/time >>> ");
                 switch (br.readLine()) {
                     case "send":
-                        message = new TimeStampedMessage(messagePasser.getLocalName(), br);
+                        System.out.print("destination:");
+                        String dest = br.readLine();
+                        System.out.print("kind:");
+                        String kind = br.readLine();
+                        System.out.print("message:");
+                        String data = br.readLine();
+                        message = new TimeStampedMessage(dest, kind, data);
                         messagePasser.send(message);
                         break;
                     case "receive":
