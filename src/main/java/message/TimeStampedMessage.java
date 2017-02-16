@@ -8,7 +8,7 @@ import clock.vector.VectorTimeStamp;
 import java.io.BufferedReader;
 
 public class TimeStampedMessage extends Message {
-    private TimeStamp timeStamp;
+    protected TimeStamp timeStamp;
 
     public TimeStampedMessage(String source, BufferedReader br) {
         super(source, br);
@@ -16,7 +16,14 @@ public class TimeStampedMessage extends Message {
             this.timeStamp = new LogicalTimeStamp();
         else this.timeStamp = new VectorTimeStamp();
     }
+   
+    public TimeStampedMessage(String dest, String kind, Object data) {
+       super(dest, kind, data);
+       if (ClockService.getClockType() == ClockService.ClockType.LOGICAL)
+            this.timeStamp = new LogicalTimeStamp();
+        else this.timeStamp = new VectorTimeStamp();
 
+    }
     @Override
     public String toString() {
         return "message.TimeStampedMessage{" +
