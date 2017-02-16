@@ -5,7 +5,7 @@ import java.io.BufferedReader;
 public class GroupMessage extends TimeStampedMessage {
     private String groupName;
 
-    public GroupMessage(String grpName, String kind, String data) {
+    public GroupMessage(String grpName, String kind, Object data) {
         super(null, kind, data);
         this.groupName = grpName;
     }	

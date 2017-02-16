@@ -5,6 +5,7 @@ import config.Configuration;
 import config.Node;
 import config.Rule;
 import logger.LogUtil;
+import config.Group;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -217,5 +218,22 @@ public class MessagePasser implements MessageReceiveCallback {
 
     public void listGroups() {
         LogUtil.logIterable("Groups Info:", Configuration.groupMap.values());
+    }
+   
+    public void multicast(Message msg) throws InterruptedException {
+      GroupMessage grpMsg = (GroupMessage) msg;
+      Group group = this.configuration.groupMap.get(grpMsg.getGroupName()); 
+     
+      for (String dest : group.getGroupMembers()) {
+        if (!dest.equals(localName)) {
+            GroupMessage sendMsg = new GroupMessage(grpMsg.getDest(), grpMsg.getKind(), grpMsg.getData());
+            sendMsg.setDest(dest);
+            send(sendMsg);
+        }
+        else {
+            GroupMessage sendMsg = new GroupMessage(grpMsg.getDest(), grpMsg.getKind(), grpMsg.getData());
+            //Handle send to self here
+        }
+      }      
     }
 }
