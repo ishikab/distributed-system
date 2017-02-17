@@ -19,7 +19,7 @@ public class VectorClockService extends ClockService {
 
     private VectorClockService() {
         LogUtil.debug("Creating Vector Clock Coordinator");
-        localNodeId = Configuration.nodeMap.get(Configuration.localName).getNodeId();
+        localNodeId = Configuration.getNodeMap().get(Configuration.localName).getNodeId();
         VectorTimeStamp.initVectorTimeStamp(localNodeId);
     }
 

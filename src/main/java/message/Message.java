@@ -10,12 +10,18 @@ public class Message implements Serializable, Cloneable {
     Integer seqNum = -1;
     Boolean isDuplicate = false;
 
-    public Message(String dest, String kind, Object data) {
+    public Message(String src, String dest, String kind, Object data) {
+        this.src = src;
         this.dest = dest;
         this.kind = kind;
         this.data = data;
     }
 
+    public Message(){
+
+    }
+
+    @Deprecated
     public Message(String source, BufferedReader br) {
         try {
             this.src = source;

@@ -13,10 +13,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Configuration {
-    public static final ConcurrentHashMap<String, Node> nodeMap = new ConcurrentHashMap<>();
-    public static final ConcurrentHashMap<String, Group> groupMap = new ConcurrentHashMap<>();
-    public static final LinkedList<Rule> sendRules = new LinkedList<>();
-    public static final LinkedList<Rule> receiveRules = new LinkedList<>();
+    private static final ConcurrentHashMap<String, Node> nodeMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Group> groupMap = new ConcurrentHashMap<>();
+    private static final LinkedList<Rule> sendRules = new LinkedList<>();
+    private static final LinkedList<Rule> receiveRules = new LinkedList<>();
     public static String localName = null;
     private static Integer numNodes = null;
     private static Integer numGroups = null;
@@ -25,6 +25,22 @@ public class Configuration {
     public Configuration(String fileName) {
         this.configurationFileName = fileName;
         updateConfiguration();
+    }
+
+    public static ConcurrentHashMap<String, Node> getNodeMap() {
+        return nodeMap;
+    }
+
+    public static ConcurrentHashMap<String, Group> getGroupMap() {
+        return groupMap;
+    }
+
+    public static LinkedList<Rule> getSendRules() {
+        return sendRules;
+    }
+
+    public static LinkedList<Rule> getReceiveRules() {
+        return receiveRules;
     }
 
     public Configuration() {
@@ -64,6 +80,7 @@ public class Configuration {
         nodeMap.clear();
         sendRules.clear();
         receiveRules.clear();
+        groupMap.clear();
         HashMap<String, ArrayList> dataMap = readConfiguration(this.configurationFileName);
         if (dataMap != null) {
             // read configuration section

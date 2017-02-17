@@ -1,16 +1,16 @@
 # Lab0 Demo Yaml
 
 groups:
-    - name : Group1
+    - name : g
       members:
          - china
          - brazil
-    - name : Group2
+    - name : g1
       members:
          - america
          - china
          - denmark
-    - name : Group3
+    - name : g2
       members:
          - brazil
          - denmark

@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 public class TimeStampedMessage extends Message {
     protected TimeStamp timeStamp;
 
+    @Deprecated
     public TimeStampedMessage(String source, BufferedReader br) {
         super(source, br);
         if (ClockService.getClockType() == ClockService.ClockType.LOGICAL)
@@ -17,12 +18,15 @@ public class TimeStampedMessage extends Message {
         else this.timeStamp = new VectorTimeStamp();
     }
    
-    public TimeStampedMessage(String dest, String kind, Object data) {
-       super(dest, kind, data);
+    public TimeStampedMessage(String src, String dest, String kind, Object data) {
+       super(src, dest, kind, data);
        if (ClockService.getClockType() == ClockService.ClockType.LOGICAL)
             this.timeStamp = new LogicalTimeStamp();
         else this.timeStamp = new VectorTimeStamp();
+    }
 
+    public TimeStampedMessage(){
+        super();
     }
     @Override
     public String toString() {
@@ -39,5 +43,8 @@ public class TimeStampedMessage extends Message {
 
     public TimeStamp getTimeStamp() {
         return timeStamp;
+    }
+    public void setTimeStamp(TimeStamp timeStamp) {
+        this.timeStamp = timeStamp;
     }
 }

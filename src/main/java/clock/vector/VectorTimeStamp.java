@@ -28,7 +28,6 @@ public class VectorTimeStamp extends TimeStamp {
             this.value.add(new AtomicInteger(nodeTimeStamp.intValue()));
         }
     }
-
     static void initVectorTimeStamp(int id) {
         nodeId = id;
         for (int i = 0; i < Configuration.getNumNodes(); i++)

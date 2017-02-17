@@ -1,11 +1,9 @@
-# distributed-system
+# distributed-system labs
 
 currently can run the program with:
 
-`mvn compile exec:java "-Dexec.args=./config.yaml alice"`
+`mvn clean compile exec:java "-Dexec.args=CONFIG_FILE NODE_NAME CLOCK_TYPE"`
 
-and
+for example, run a china program with vector timestamps and config file lab0.yaml should be:
 
-`mvn compile exec:java "-Dexec.args=./config.yaml bob"`
-
-to run two clients on same machine (just for testing)
+`mvn clean compile exec:java "-Dexec.args=lab0.yaml china vector"`

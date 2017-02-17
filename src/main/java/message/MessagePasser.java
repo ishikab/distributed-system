@@ -6,6 +6,7 @@ import config.Node;
 import config.Rule;
 import logger.LogUtil;
 import config.Group;
+import multicast.MulticastCoordinator;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -26,24 +27,28 @@ public class MessagePasser implements MessageReceiveCallback {
     private final LinkedBlockingQueue<Message> receiveMessagesQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<Message> receiveDelayMessageQueue = new LinkedBlockingQueue<>();
     private final ConcurrentHashMap<String, AtomicInteger> seqNumMap = new ConcurrentHashMap<>();
-    ClockService clockService;
+    private MulticastCoordinator multicastCoordinator = null;
+    private ClockService clockService;
     private String localName;
     private String IP;
     private Integer port;
     private MessageListenerThread listenerThread;
-    boolean block = false;
+    private boolean block = false;
 
     @SuppressWarnings("unchecked")
     public MessagePasser(String configFileName, String localName) {
         this.localName = localName;
         Configuration.localName = localName;
         //this.seqNum = new AtomicInteger(0);
+
         configuration.updateConfiguration(configFileName);
-        Node self = configuration.nodeMap.get(localName);
+        Node self = Configuration.getNodeMap().get(localName);
         LogUtil.info(self);
         this.IP = self.getIP();
         this.port = self.getPort();
         clockService = ClockService.getInstance();
+        multicastCoordinator = MulticastCoordinator.getInstance();
+        multicastCoordinator.init();
 //        checkNodeInfo();
         listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
@@ -75,65 +80,77 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     public void send(Message message) {
+        LogUtil.debug("trying to send " + message);
         boolean duplicateMessage = false;
-        try {
-            seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
-            message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
-            for (Rule rule : Configuration.sendRules) {
-                if (rule.matches(message)) {
-                    LogUtil.println("found match: " + rule);
-                    LogUtil.println(String.format("[%s] %s", rule.action, message));
-                    switch (rule.action) {
-                        case DROP:
+        seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
+        message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
+        for (Rule rule : Configuration.getSendRules()) {
+            if (rule.matches(message)) {
+                LogUtil.println("found match: " + rule);
+                LogUtil.println(String.format("[%s] %s", rule.action, message));
+                switch (rule.action) {
+                    case DROP:
+                        return;
+                    case DROP_AFTER:
+                        if (message.getSeqNum() > rule.seqNum)
                             return;
-                        case DROP_AFTER:
-                            if (message.getSeqNum() > rule.seqNum)
-                                return;
-                            break;
-                        case DUPLICATE:
-                            duplicateMessage = true;
-                            break;
-                        case DELAY:
-                            this.sendDelayMessageQueue.add(message);
-                            return;
-                    }
-                    break;
+                        break;
+                    case DUPLICATE:
+                        duplicateMessage = true;
+                        break;
+                    case DELAY:
+                        this.sendDelayMessageQueue.add(message);
+                        return;
                 }
+                break;
             }
-            directSend(message);
-            if (duplicateMessage) {
-                Message clonedMessage = message.clone();
-                clonedMessage.setDuplicate(true);
-                directSend(clonedMessage);
-            }
-
-            while (sendDelayMessageQueue.peek() != null) {
-                directSend(sendDelayMessageQueue.poll());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        directSend(message);
+        if (duplicateMessage) {
+            Message clonedMessage = message.clone();
+            clonedMessage.setDuplicate(true);
+            directSend(clonedMessage);
+        }
+
+        while (sendDelayMessageQueue.peek() != null) {
+            directSend(sendDelayMessageQueue.poll());
+        }
+
     }
 
-    private void directSend(Message message) throws IOException {
-        Node destNode = Configuration.nodeMap.getOrDefault(message.getDest(), null);
+    private void directSend(Message message) {
+        Node destNode = Configuration.getNodeMap().getOrDefault(message.getDest(), null);
         if (destNode == null) {
             LogUtil.error("dest not found");
             return;
         }
-        try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
-            try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
-                LogUtil.println(message);
-                out.writeObject(message);
-                out.flush();
+        try {
+            try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
+                try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
+                    LogUtil.println(message);
+                    out.writeObject(message);
+                    out.flush();
+                }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LogUtil.error("failed to send message");
         }
     }
 
     @Override
     public void handleMessage(Message message) {
+        if (message instanceof GroupMessage) {
+            handleGroupMessage((GroupMessage) message);
+            GroupMessage groupMessage = multicastCoordinator.releaseGroupMessage(((GroupMessage) message).getGroupTimeStamp());
+            if(groupMessage != null) {
+                this.receiveMessagesQueue.add(groupMessage);
+                multicastCoordinator.incrementTime(((GroupMessage) message).getGroupName(), message.getSrc());
+            }
+            return;
+        }
         //LogUtil.println(message);
-        for (Rule rule : Configuration.receiveRules) {
+        for (Rule rule : Configuration.getReceiveRules()) {
             if (rule.matches(message)) {
                 LogUtil.println("found rule match: " + rule);
                 LogUtil.println(String.format("[%s] %s", rule.action, message));
@@ -163,15 +180,23 @@ public class MessagePasser implements MessageReceiveCallback {
         this.block = false;
     }
 
+    /**
+     * On B-deliver from p_j (j!=i), with g = group(m)
+     * place <v_j, m> in hold-back queue
+     * @param message
+     */
+    private void handleGroupMessage(GroupMessage message) {
+        multicastCoordinator.holdMessage(message);
+    }
+
     public Message receive() {
         if (receiveMessagesQueue.peek() == null)
             return null;
         Message message = receiveMessagesQueue.poll();
-        if (message != null && this.block != true)
-        {
-          while (this.receiveDelayMessageQueue.peek() != null) {
-              this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
-          }
+        if (message != null && this.block != true) {
+            while (this.receiveDelayMessageQueue.peek() != null) {
+                this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
+            }
         }
         clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
         return message;
@@ -179,13 +204,13 @@ public class MessagePasser implements MessageReceiveCallback {
 
     private void checkNodeInfo() {
         try {
-            if (this.configuration.nodeMap.getOrDefault(this.localName, null) == null) {
+            if (Configuration.getNodeMap().getOrDefault(this.localName, null) == null) {
                 LogUtil.fatalError("local name not found");
             }
             String localIP = InetAddress.getLocalHost().getHostAddress();
-            if (!localIP.equals(this.configuration.nodeMap.get(this.localName).getIP())) {
+            if (!localIP.equals(Configuration.getNodeMap().get(this.localName).getIP())) {
                 LogUtil.fatalError(String.format("Localhost IP (%s) doesn't match. supposed to be (%s", localIP,
-                        this.configuration.nodeMap.get(this.localName).getIP()));
+                        Configuration.getNodeMap().get(this.localName).getIP()));
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -195,11 +220,11 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     private void listReceiveRules() {
-        LogUtil.logIterable("Receive Rules Info:", this.configuration.receiveRules);
+        LogUtil.logIterable("Receive Rules Info:", Configuration.getReceiveRules());
     }
 
     private void listSendRules() {
-        LogUtil.logIterable("Send Rules Info:", this.configuration.sendRules);
+        LogUtil.logIterable("Send Rules Info:", Configuration.getSendRules());
     }
 
     public void listRules() {
@@ -208,7 +233,7 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     public void listNodes() {
-        LogUtil.logIterable("Nodes Info:", this.configuration.nodeMap.values());
+        LogUtil.logIterable("Nodes Info:", Configuration.getNodeMap().values());
 
     }
 
@@ -217,23 +242,29 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     public void listGroups() {
-        LogUtil.logIterable("Groups Info:", Configuration.groupMap.values());
+        LogUtil.logIterable("Groups Info:", Configuration.getGroupMap().values());
     }
-   
-    public void multicast(Message msg) throws InterruptedException {
-      GroupMessage grpMsg = (GroupMessage) msg;
-      Group group = this.configuration.groupMap.get(grpMsg.getGroupName()); 
-     
-      for (String dest : group.getGroupMembers()) {
-        if (!dest.equals(localName)) {
-            GroupMessage sendMsg = new GroupMessage(grpMsg.getDest(), grpMsg.getKind(), grpMsg.getData());
-            sendMsg.setDest(dest);
-            send(sendMsg);
+
+    /**
+     * To CO-multicast message m to group g (Figure 15.15, P657)
+     * @param groupMessage message to multicast
+     */
+    public void multicast(GroupMessage groupMessage) {
+        String groupName = groupMessage.getGroupName();
+        Group group = Configuration.getGroupMap().get(groupName);
+        if (group == null || !group.hasNodeName(localName)) {
+            // TODO: when node is not in that group, return. maybe we need to change it later
+            LogUtil.error(localName + " is not in group " + groupName);
+            return;
         }
-        else {
-            GroupMessage sendMsg = new GroupMessage(grpMsg.getDest(), grpMsg.getKind(), grpMsg.getData());
-            //Handle send to self here
+        multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
+        for (String dest : group.getGroupMembers()) {
+            if (!dest.equals(localName)) {
+                GroupMessage sendGroupMessage = new GroupMessage(groupMessage);
+                sendGroupMessage.setDest(dest);
+                sendGroupMessage.setCurrentGroupTimeStamp(groupName);
+                this.send(sendGroupMessage);
+            }
         }
-      }      
     }
 }

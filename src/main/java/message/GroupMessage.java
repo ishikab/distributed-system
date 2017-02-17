@@ -1,15 +1,40 @@
 package message;
 
-import java.io.BufferedReader;
+import multicast.MulticastCoordinator;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GroupMessage extends TimeStampedMessage {
-    private String groupName;
+    private String groupName = null;
+    private ConcurrentHashMap<String, AtomicInteger> groupTimeStamp = null;
 
-    public GroupMessage(String grpName, String kind, Object data) {
-        super(null, kind, data);
-        this.groupName = grpName;
-    }	
-	
+    public GroupMessage(String src, String groupName, String kind, Object data) {
+        super(src, null, kind, data);
+        this.groupName = groupName;
+    }
+    public ConcurrentHashMap<String, AtomicInteger> getGroupTimeStamp() {
+        return this.groupTimeStamp;
+    }
+
+    public GroupMessage(GroupMessage message) {
+        this.src = message.src;
+        this.dest = message.dest;
+        this.kind = message.kind;
+        this.seqNum = message.seqNum;
+        this.isDuplicate = message.isDuplicate;
+        this.data = message.data;
+        this.timeStamp = message.timeStamp;
+        this.groupName = message.groupName;
+    }
+    public void setGroupTimeStamp(ConcurrentHashMap<String, AtomicInteger> hashMap) {
+        this.groupTimeStamp = hashMap;
+    }
+
+    public void setCurrentGroupTimeStamp(String groupName) {
+        this.groupTimeStamp = MulticastCoordinator.getGroupTimeStampCopy(groupName);
+    }
+
     public String getGroupName() {
         return this.groupName;
     }
@@ -25,6 +50,7 @@ public class GroupMessage extends TimeStampedMessage {
                 ", isDuplicate=" + isDuplicate +
                 ", timeStamp=" + timeStamp +
                 ", groupName=" + groupName +
+                ", groupTimeStamp=" + groupTimeStamp +
                 '}';
     }
 }

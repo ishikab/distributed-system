@@ -1,8 +1,11 @@
 import clock.ClockService;
+import config.Configuration;
 import logger.LogUtil;
+import message.GroupMessage;
 import message.Message;
 import message.MessagePasser;
 import message.TimeStampedMessage;
+import multicast.MulticastCoordinator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,21 +45,32 @@ public class Driver {
         }
 
         MessagePasser messagePasser = new MessagePasser(configFileName, localName);
+
         ClockService clockService = ClockService.getInstance();
+
+        Message message;
+        String data, kind, groupName, dest;
         while (true) {
             try {
-                Message message;
-                System.out.print("send/receive/exit/rules/nodes/time >>> ");
+                LogUtil.print("send/receive/exit/rules/nodes/time >>> ");
                 switch (br.readLine()) {
+                    case "multicast":
+                        LogUtil.print("group: ");
+                        groupName = br.readLine();
+                        LogUtil.print("kind: ");
+                        kind = br.readLine();
+                        LogUtil.print("message: ");
+                        data = br.readLine();
+                        messagePasser.multicast(new GroupMessage(localName, groupName, kind, data));
+                        break;
                     case "send":
-                        System.out.print("destination:");
-                        String dest = br.readLine();
-                        System.out.print("kind:");
-                        String kind = br.readLine();
-                        System.out.print("message:");
-                        String data = br.readLine();
-                        message = new TimeStampedMessage(dest, kind, data);
-                        messagePasser.send(message);
+                        LogUtil.print("destination: ");
+                        dest = br.readLine();
+                        LogUtil.print("kind: ");
+                        kind = br.readLine();
+                        LogUtil.print("message: ");
+                        data = br.readLine();
+                        messagePasser.send(new TimeStampedMessage(localName, dest, kind, data));
                         break;
                     case "receive":
                         message = messagePasser.receive();
@@ -65,6 +79,7 @@ public class Driver {
                         if (message == null) LogUtil.println("No new message");
                         else LogUtil.println(message);
                         break;
+
                     case "exit":
                         LogUtil.println("Thanks for using");
                         System.exit(0);

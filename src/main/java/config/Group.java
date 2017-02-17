@@ -3,6 +3,7 @@ package config;
 import logger.LogUtil;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import message.Message;
 /**
@@ -10,21 +11,24 @@ import message.Message;
  */
 public class Group {
     private String groupName;
-    private ArrayList<String> groupMembers;
+    private HashSet<String> groupMembers;
     private ArrayList<Message> holdBackList = new ArrayList<Message>();
- 
+
+    @SuppressWarnings("unchecked")
     public Group(LinkedHashMap data) {
         this.groupName = (String) data.get("name");
-        this.groupMembers = (ArrayList<String>) data.get("members");
-        LogUtil.info("hello");
+        this.groupMembers = new HashSet((ArrayList)data.get("members")) ;
     }
    
     public String getGroupName() {
         return groupName;
     } 
    
-    public ArrayList<String> getGroupMembers() {
+    public HashSet<String> getGroupMembers() {
         return groupMembers;
+    }
+    public boolean hasNodeName(String nodeName) {
+        return groupMembers.contains(nodeName);
     }
 
     public void addToHoldBackList(Message msg){
