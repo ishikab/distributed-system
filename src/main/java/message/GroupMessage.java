@@ -26,6 +26,7 @@ public class GroupMessage extends TimeStampedMessage {
         this.data = message.data;
         this.timeStamp = message.timeStamp;
         this.groupName = message.groupName;
+        this.groupTimeStamp = message.groupTimeStamp;
     }
     public void setGroupTimeStamp(ConcurrentHashMap<String, AtomicInteger> hashMap) {
         this.groupTimeStamp = hashMap;

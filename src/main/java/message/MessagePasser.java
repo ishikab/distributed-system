@@ -130,7 +130,7 @@ public class MessagePasser implements MessageReceiveCallback {
         try {
             try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
                 try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
-                    //LogUtil.println(message);
+                    LogUtil.println(message);
                     out.writeObject(message);
                     out.flush();
                 }
@@ -196,7 +196,6 @@ public class MessagePasser implements MessageReceiveCallback {
 
         if(multicastCoordinator.holdBackQueue.size() > 0) {
             for(int i = 0; i < multicastCoordinator.holdBackQueue.size(); i++) {
-                System.out.println(multicastCoordinator.holdBackQueue.get(i));
                 if (multicastCoordinator.releaseGroupMessage(multicastCoordinator.holdBackQueue.get(i)) && !multi) {
                     message = multicastCoordinator.holdBackQueue.get(i);
                     multicastCoordinator.holdBackQueue.remove(i);
