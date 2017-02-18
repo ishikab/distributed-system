@@ -52,7 +52,7 @@ public class Driver {
         String data, kind, groupName, dest;
         while (true) {
             try {
-                LogUtil.print("send/receive/exit/rules/nodes/time >>> ");
+                LogUtil.print("send/receive/multicast/exit/rules/nodes/time >>> ");
                 switch (br.readLine()) {
                     case "multicast":
                         LogUtil.print("group: ");
@@ -104,7 +104,7 @@ public class Driver {
                         LogUtil.println("playing, local time +1s");
                         break;
                     default:
-                        LogUtil.println("available commands: send/receive/exit/rules/nodes/time");
+                        LogUtil.println("available commands: send/receive/multicast/exit/rules/nodes/time");
                         break;
                 }
             } catch (IOException e) {
