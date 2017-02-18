@@ -136,7 +136,13 @@ public class MessagePasser implements MessageReceiveCallback {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            if (message instanceof GroupMessage)
+            {
+                String error = destNode.getName() + " is not live";
+                LogUtil.error(error);
+            }
+            else
             LogUtil.error("failed to send message");
         }
     }
