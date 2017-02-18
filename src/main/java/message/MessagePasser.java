@@ -130,7 +130,7 @@ public class MessagePasser implements MessageReceiveCallback {
         try {
             try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
                 try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
-                    LogUtil.println(message);
+                    //LogUtil.println(message);
                     out.writeObject(message);
                     out.flush();
                 }
@@ -196,6 +196,7 @@ public class MessagePasser implements MessageReceiveCallback {
 
         if(multicastCoordinator.holdBackQueue.size() > 0) {
             for(int i = 0; i < multicastCoordinator.holdBackQueue.size(); i++) {
+                System.out.println(multicastCoordinator.holdBackQueue.get(i));
                 if (multicastCoordinator.releaseGroupMessage(multicastCoordinator.holdBackQueue.get(i)) && !multi) {
                     message = multicastCoordinator.holdBackQueue.get(i);
                     multicastCoordinator.holdBackQueue.remove(i);
@@ -215,7 +216,7 @@ public class MessagePasser implements MessageReceiveCallback {
                     }
                     if (multicastCoordinator.releaseGroupMessage((GroupMessage) message)) {
                         multi = true;
-                        multicastCoordinator.incrementTime(((GroupMessage) message).getGroupName(), message.getSrc());
+                        multicastCoordinator.updateTime(((GroupMessage) message).getGroupName(), (GroupMessage) message);
                     }
                     else {
                         handleGroupMessage((GroupMessage) message);
@@ -316,13 +317,13 @@ public class MessagePasser implements MessageReceiveCallback {
             LogUtil.error(localName + " is not in group " + groupName);
             return;
         }
-        multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
+        //multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
         for (String dest : group.getGroupMembers()) {
             if (!localName.equals(groupMessage.getSrc())) {
                 GroupMessage recastGroupMessage = groupMessage.clone();
                 recastGroupMessage.setDest(dest);
-                seqNumMap.putIfAbsent(dest, new AtomicInteger(-1));
-                recastGroupMessage.setSeqNum((seqNumMap.get(dest)).incrementAndGet());
+                //seqNumMap.putIfAbsent(dest, new AtomicInteger(-1));
+                //recastGroupMessage.setSeqNum((seqNumMap.get(dest)).incrementAndGet());
                 this.directSend(recastGroupMessage);
             }
         }
