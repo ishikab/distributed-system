@@ -17,6 +17,8 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.ListIterator;
 
 /**
  * Main message pass class
@@ -34,6 +36,7 @@ public class MessagePasser implements MessageReceiveCallback {
     private Integer port;
     private MessageListenerThread listenerThread;
     private boolean block = false;
+    private ArrayList<Message> multicastReceived = new ArrayList<Message>();
 
     @SuppressWarnings("unchecked")
     public MessagePasser(String configFileName, String localName) {
@@ -140,15 +143,6 @@ public class MessagePasser implements MessageReceiveCallback {
 
     @Override
     public void handleMessage(Message message) {
-        if (message instanceof GroupMessage) {
-            handleGroupMessage((GroupMessage) message);
-            GroupMessage groupMessage = multicastCoordinator.releaseGroupMessage(((GroupMessage) message).getGroupTimeStamp());
-            if(groupMessage != null) {
-                this.receiveMessagesQueue.add(groupMessage);
-                multicastCoordinator.incrementTime(((GroupMessage) message).getGroupName(), message.getSrc());
-            }
-            return;
-        }
         //LogUtil.println(message);
         for (Rule rule : Configuration.getReceiveRules()) {
             if (rule.matches(message)) {
@@ -190,15 +184,55 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     public Message receive() {
+        Message message = null;
+        boolean multi = false;
+        boolean nonMulti = false;
+
+        if(multicastCoordinator.holdBackQueue.size() > 0) {
+            for(int i = 0; i < multicastCoordinator.holdBackQueue.size(); i++) {
+                if (multicastCoordinator.releaseGroupMessage(multicastCoordinator.holdBackQueue.get(i)) && !multi) {
+                    message = multicastCoordinator.holdBackQueue.get(i);
+                    multicastCoordinator.holdBackQueue.remove(i);
+                    multi = true;
+                }
+            }
+        }
         if (receiveMessagesQueue.peek() == null)
             return null;
-        Message message = receiveMessagesQueue.poll();
+        while((receiveMessagesQueue.size() > 0) && !multi && !nonMulti) {
+            message = receiveMessagesQueue.poll();
+            if (message instanceof GroupMessage) {
+                if (!multicastMessageWasReceived(message)) {
+                    multicastReceived.add(message);
+                    if(!localName.equalsIgnoreCase(message.getSrc())) {
+                        this.recast((GroupMessage) message);
+                    }
+                    if (multicastCoordinator.releaseGroupMessage((GroupMessage) message)) {
+                        multi = true;
+                        multicastCoordinator.incrementTime(((GroupMessage) message).getGroupName(), message.getSrc());
+                    }
+                    else {
+                        handleGroupMessage((GroupMessage) message);
+                        message = null;
+                    }
+                }
+                else {
+                    message = null;
+                }
+            }
+            else {
+                nonMulti = true;
+            }
+        }
+
         if (message != null && this.block != true) {
             while (this.receiveDelayMessageQueue.peek() != null) {
                 this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
             }
         }
-        clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
+        if (message != null) {
+            clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
+        }
         return message;
     }
 
@@ -259,12 +293,44 @@ public class MessagePasser implements MessageReceiveCallback {
         }
         multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
         for (String dest : group.getGroupMembers()) {
-            if (!dest.equals(localName)) {
+            //if (!dest.equals(localName)) {
                 GroupMessage sendGroupMessage = new GroupMessage(groupMessage);
                 sendGroupMessage.setDest(dest);
                 sendGroupMessage.setCurrentGroupTimeStamp(groupName);
                 this.send(sendGroupMessage);
+            //}
+        }
+    }
+
+    public void recast(GroupMessage groupMessage) {
+        String groupName = groupMessage.getGroupName();
+        Group group = Configuration.getGroupMap().get(groupName);
+        if (group == null || !group.hasNodeName(localName)) {
+            // TODO: when node is not in that group, return. maybe we need to change it later
+            LogUtil.error(localName + " is not in group " + groupName);
+            return;
+        }
+        multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
+        for (String dest : group.getGroupMembers()) {
+            if (!localName.equals(groupMessage.getSrc())) {
+                GroupMessage recastGroupMessage = groupMessage.clone();
+                recastGroupMessage.setDest(dest);
+                seqNumMap.putIfAbsent(dest, new AtomicInteger(-1));
+                recastGroupMessage.setSeqNum((seqNumMap.get(dest)).incrementAndGet());
+                this.directSend(recastGroupMessage);
             }
         }
     }
+
+  private boolean multicastMessageWasReceived(Message message) {
+        boolean wasReceived = false;
+        ListIterator<Message> it = multicastReceived.listIterator();
+        for(Message received : multicastReceived) {
+            if(received.isSameAs(message)) {
+                wasReceived = true;
+            }
+        }
+        return wasReceived;
+    }
+
 }

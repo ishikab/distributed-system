@@ -129,4 +129,14 @@ public class Message implements Serializable, Cloneable {
     public void set_duplicate(Boolean dupe) {
         this.isDuplicate = dupe;
     }
+
+    public boolean isSameAs(Message message) {
+        if(this.getKind().equalsIgnoreCase(message.getKind()) &&
+            this.getSrc().equalsIgnoreCase(message.getSrc()) &&
+            this.getData().equals(message.getData()) && 
+            this.getDest().equals(message.getDest())) {
+              return true;
+        }
+        return false;
+    }
 }

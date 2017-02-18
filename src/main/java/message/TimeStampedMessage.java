@@ -47,4 +47,9 @@ public class TimeStampedMessage extends Message {
     public void setTimeStamp(TimeStamp timeStamp) {
         this.timeStamp = timeStamp;
     }
+ 
+    protected TimeStampedMessage clone() {
+       return (TimeStampedMessage) super.clone();
+    }
+
 }

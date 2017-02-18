@@ -53,4 +53,9 @@ public class GroupMessage extends TimeStampedMessage {
                 ", groupTimeStamp=" + groupTimeStamp +
                 '}';
     }
+
+   protected GroupMessage clone() {
+     return (GroupMessage) super.clone();
+    }
+
 }
