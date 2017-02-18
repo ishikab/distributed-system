@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
 
 /**
  * Created by wcx73 on 2017/2/16.
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MulticastCoordinator {
     private static final MulticastCoordinator instance = new MulticastCoordinator();
     private final ConcurrentHashMap<String, ConcurrentHashMap<String, AtomicInteger>> groupTimeStampMap = new ConcurrentHashMap<>();
-    private final LinkedBlockingDeque<GroupMessage> holdBackQueue = new LinkedBlockingDeque<>();
+    public final ArrayList<GroupMessage> holdBackQueue = new ArrayList<>();
 
     public void init() {
         ConcurrentHashMap<String, Group> groupMap = Configuration.getGroupMap();
@@ -63,32 +64,29 @@ public class MulticastCoordinator {
     }
 
     // TODO: known bug - something wrong with queue.pop() but doesn't affect functionality
-    public GroupMessage releaseGroupMessage(ConcurrentHashMap<String, AtomicInteger> map){
+    public synchronized boolean releaseGroupMessage(GroupMessage message){
         String localName = Configuration.localName;
         String groupName = null;
-        for (GroupMessage message: holdBackQueue){
+        ConcurrentHashMap<String, AtomicInteger> map = message.getGroupTimeStamp(); 
+        if (message.getSrc().equals(localName))
+          return true;
+        boolean remove = true;
+        //for (GroupMessage message: holdBackQueue){
             groupName = message.getGroupName();
-            boolean shouldBreak = false;
             String messageSource = message.getSrc();
             for (String nodeName: map.keySet()) {
-                if (shouldBreak) break;
+                if (!remove) break;
                 int localTimeStamp = this.groupTimeStampMap.get(groupName).get(nodeName).getAndAdd(0);
                 int remoteTimeStamp = map.get(nodeName).getAndAdd(0);
                 if (messageSource.equals(nodeName)) {
                     if (localTimeStamp + 1 != remoteTimeStamp)
-                        shouldBreak = true;
+                        remove = false;
                 } else {
                     if (localTimeStamp < remoteTimeStamp)
-                        shouldBreak = true;
+                        remove = false;
                 }
             }
-            if (!shouldBreak){
-                LogUtil.info("candidate found");
-                LogUtil.info(message);
-                LogUtil.info(map);
-                return message;
-            }
-        }
-        return null;
+        //}
+        return remove;
     }
 }
