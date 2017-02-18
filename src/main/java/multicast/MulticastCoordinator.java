@@ -50,14 +50,13 @@ public class MulticastCoordinator {
     public static ConcurrentHashMap<String, AtomicInteger> getGroupTimeStampCopy(String groupName) {
         ConcurrentHashMap<String, AtomicInteger> ret = new ConcurrentHashMap<>();
         for (Map.Entry<String, AtomicInteger> entry : instance.getGroupTimeStampMap().get(groupName).entrySet()) {
-            ret.put(entry.getKey(), entry.getValue());
+            ret.put(new String(entry.getKey()), new AtomicInteger(entry.getValue().get()));
         }
         return ret;
     }
 
     public void incrementTime(String groupName, String localName) {
         instance.getGroupTimeStampMap().get(groupName).get(localName).addAndGet(1);
-        System.out.println(this);
     }
 
     public void holdMessage(GroupMessage message) {
@@ -103,7 +102,5 @@ public class MulticastCoordinator {
             int newTime = Math.max(localTime, receivedTime); 
             local.put(entry.getKey(), new AtomicInteger(newTime));
         }
-                System.out.println(this);
-
     }
 }
