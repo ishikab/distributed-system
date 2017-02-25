@@ -2,10 +2,10 @@ package message;
 
 import clock.ClockService;
 import config.Configuration;
+import config.Group;
 import config.Node;
 import config.Rule;
 import logger.LogUtil;
-import config.Group;
 import multicast.MulticastCoordinator;
 
 import java.io.BufferedOutputStream;
@@ -14,11 +14,11 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.ArrayList;
-import java.util.ListIterator;
 
 /**
  * Main message pass class
@@ -38,6 +38,13 @@ public class MessagePasser implements MessageReceiveCallback {
     private boolean block = false;
     private ArrayList<Message> multicastReceived = new ArrayList<Message>();
 
+    // variables for lab3
+    private RequestState requestState = RequestState.RELEASED;
+    private boolean voted = false;
+    private LinkedBlockingQueue<GroupMessage> requestQueue = new LinkedBlockingQueue<>();
+    private String mainGroup = null;
+    private CountDownLatch repliesCounter = null;
+
     @SuppressWarnings("unchecked")
     public MessagePasser(String configFileName, String localName) {
         this.localName = localName;
@@ -52,11 +59,31 @@ public class MessagePasser implements MessageReceiveCallback {
         clockService = ClockService.getInstance();
         multicastCoordinator = MulticastCoordinator.getInstance();
         multicastCoordinator.init();
-//        checkNodeInfo();
         listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
+
+        // lab3
+        mainGroup = Configuration.getNodeMap().get(localName).getGroups().get(0);
     }
 
+    /**
+     * for p_i to exit the critical section
+     * state:=RELEASED
+     * multicast release to all processes in V_i
+     */
+    public void releaseRecourse() {
+        if (repliesCounter.getCount() != 0) {
+            LogUtil.info(String.format("still waiting for %d response(s)", repliesCounter.getCount()));
+            return;
+        }
+        if (this.requestState != RequestState.HELD) {
+            LogUtil.error("local is not in critical section");
+        } else {
+            this.requestState = RequestState.RELEASED;
+            GroupMessage groupMessage = new GroupMessage(localName, mainGroup, null, null, GroupMessage.MessageType.RELEASE);
+            multicast(groupMessage);
+        }
+    }
 
     public String getLocalName() {
         return localName;
@@ -130,20 +157,18 @@ public class MessagePasser implements MessageReceiveCallback {
         try {
             try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
                 try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
-                    LogUtil.println(message);
+//                    LogUtil.println(message);
                     out.writeObject(message);
                     out.flush();
                 }
             }
         } catch (IOException e) {
             //e.printStackTrace();
-            if (message instanceof GroupMessage)
-            {
+            if (message instanceof GroupMessage) {
                 String error = destNode.getName() + " is not live";
                 LogUtil.error(error);
-            }
-            else
-            LogUtil.error("failed to send message");
+            } else
+                LogUtil.error("failed to send message");
         }
     }
 
@@ -183,6 +208,7 @@ public class MessagePasser implements MessageReceiveCallback {
     /**
      * On B-deliver from p_j (j!=i), with g = group(m)
      * place <v_j, m> in hold-back queue
+     *
      * @param message
      */
     private void handleGroupMessage(GroupMessage message) {
@@ -194,8 +220,8 @@ public class MessagePasser implements MessageReceiveCallback {
         boolean multi = false;
         boolean nonMulti = false;
 
-        if(multicastCoordinator.holdBackQueue.size() > 0) {
-            for(int i = 0; i < multicastCoordinator.holdBackQueue.size(); i++) {
+        if (multicastCoordinator.holdBackQueue.size() > 0) {
+            for (int i = 0; i < multicastCoordinator.holdBackQueue.size(); i++) {
                 if (multicastCoordinator.releaseGroupMessage(multicastCoordinator.holdBackQueue.get(i)) && !multi) {
                     message = multicastCoordinator.holdBackQueue.get(i);
                     multicastCoordinator.holdBackQueue.remove(i);
@@ -203,43 +229,96 @@ public class MessagePasser implements MessageReceiveCallback {
                 }
             }
         }
-        if (receiveMessagesQueue.peek() == null)
-            return null;
-        while((receiveMessagesQueue.size() > 0) && !multi && !nonMulti) {
+        if (receiveMessagesQueue.peek() == null) return null;
+        while ((receiveMessagesQueue.size() > 0) && !multi && !nonMulti) {
             message = receiveMessagesQueue.poll();
             if (message instanceof GroupMessage) {
                 if (!multicastMessageWasReceived(message)) {
                     multicastReceived.add(message);
-                    if(!localName.equalsIgnoreCase(message.getSrc())) {
+                    if (!localName.equalsIgnoreCase(message.getSrc())) {
                         this.recast((GroupMessage) message);
                     }
                     if (multicastCoordinator.releaseGroupMessage((GroupMessage) message)) {
                         multi = true;
                         multicastCoordinator.updateTime(((GroupMessage) message).getGroupName(), (GroupMessage) message);
-                    }
-                    else {
+                    } else {
                         handleGroupMessage((GroupMessage) message);
                         message = null;
                     }
-                }
-                else {
-                    message = null;
-                }
-            }
-            else {
+                } else message = null;
+            } else {
                 nonMulti = true;
             }
         }
 
-        if (message != null && this.block != true) {
-            while (this.receiveDelayMessageQueue.peek() != null) {
+        if (message != null && !this.block) {
+            while (this.receiveDelayMessageQueue.peek() != null)
                 this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
+        }
+        if (message != null) clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
+
+        // handle if the message is special group message
+        if (message != null && message instanceof GroupMessage) {
+            switch (((GroupMessage) message).getMessageType()) {
+                case RELEASE:
+                    receiveReleaseMessage();
+                    break;
+                case REQUEST:
+                    receiveRequestMessage((GroupMessage) message);
+                    break;
+                case REPLY:
+                    repliesCounter.countDown();
+                    break;
+                default:
             }
         }
-        if (message != null) {
-            clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
-        }
         return message;
+    }
+
+    /**
+     * on receipt of a request from p_i at p_j
+     * if (state == HELD or voted == TRUE)
+     * then
+     * queue request from p_i without replying
+     * else
+     * send reply to p_i
+     * voted = TRUE
+     * endif
+     *
+     * @param message group message
+     */
+    private void receiveRequestMessage(GroupMessage message) {
+        if (this.requestState == RequestState.HELD || voted) {
+            requestQueue.offer(message);
+        } else {
+            sendReply(message);
+            this.voted = true;
+        }
+    }
+
+    /**
+     * on receipt of a release from p_i at p_j
+     * if queue not empty
+     * then
+     * remove head of queue
+     * send reply to p_k
+     * voted := TRUE
+     * else
+     * voted := FALSE
+     * endif
+     */
+    private void receiveReleaseMessage() {
+        if (!requestQueue.isEmpty()) {
+            GroupMessage groupMessage = requestQueue.poll();
+            sendReply(groupMessage);
+        }
+    }
+
+    private void sendReply(GroupMessage message) {
+        message.setMessageType(GroupMessage.MessageType.REPLY);
+        message.setDest(message.getSrc());
+        message.setSrc(localName);
+        directSend(message);
     }
 
     private void checkNodeInfo() {
@@ -287,6 +366,7 @@ public class MessagePasser implements MessageReceiveCallback {
 
     /**
      * To CO-multicast message m to group g (Figure 15.15, P657)
+     *
      * @param groupMessage message to multicast
      */
     public void multicast(GroupMessage groupMessage) {
@@ -300,10 +380,10 @@ public class MessagePasser implements MessageReceiveCallback {
         multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
         for (String dest : group.getGroupMembers()) {
             //if (!dest.equals(localName)) {
-                GroupMessage sendGroupMessage = new GroupMessage(groupMessage);
-                sendGroupMessage.setDest(dest);
-                sendGroupMessage.setCurrentGroupTimeStamp(groupName);
-                this.send(sendGroupMessage);
+            GroupMessage sendGroupMessage = new GroupMessage(groupMessage);
+            sendGroupMessage.setDest(dest);
+            sendGroupMessage.setCurrentGroupTimeStamp(groupName);
+            this.send(sendGroupMessage);
             //}
         }
     }
@@ -328,15 +408,42 @@ public class MessagePasser implements MessageReceiveCallback {
         }
     }
 
-  private boolean multicastMessageWasReceived(Message message) {
+    /**
+     * for P_i to enter the section:
+     * state := WANTED
+     * multicast request to all processes in V_i
+     * wait until received == K
+     * state := HELD
+     *
+     */
+    public void requestResource() {
+        try {
+            if (this.requestState == RequestState.RELEASED) {
+                this.requestState = RequestState.WANTED;
+                GroupMessage groupMessage = new GroupMessage(localName, mainGroup, null, null, GroupMessage.MessageType.REQUEST);
+                repliesCounter = new CountDownLatch(Configuration.getGroupSize(mainGroup) - 1);
+                multicast(groupMessage);
+//                repliesCounter.await();
+//                this.requestState = RequestState.HELD;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private boolean multicastMessageWasReceived(Message message) {
         boolean wasReceived = false;
-        ListIterator<Message> it = multicastReceived.listIterator();
-        for(Message received : multicastReceived) {
-            if(received.isSameAs(message)) {
+        for (Message received : multicastReceived) {
+            if (received.isSameAs(message)) {
                 wasReceived = true;
             }
         }
         return wasReceived;
+    }
+
+    public enum RequestState {
+        WANTED, RELEASED, HELD
     }
 
 }

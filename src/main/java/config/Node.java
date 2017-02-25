@@ -24,6 +24,10 @@ public class Node {
         this.groups = (ArrayList<String>) data.get("memberOf");
     }
 
+    public ArrayList<String> getGroups() {
+        return groups;
+    }
+
     public String getName() {
         return this.name;
     }

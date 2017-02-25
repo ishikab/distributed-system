@@ -1,11 +1,9 @@
 import clock.ClockService;
-import config.Configuration;
 import logger.LogUtil;
 import message.GroupMessage;
 import message.Message;
 import message.MessagePasser;
 import message.TimeStampedMessage;
-import multicast.MulticastCoordinator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -54,6 +52,12 @@ public class Driver {
             try {
                 LogUtil.print("send/receive/multicast/exit/rules/nodes/time >>> ");
                 switch (br.readLine()) {
+                    case "request":
+                        messagePasser.requestResource();
+                        break;
+                    case "release":
+                        messagePasser.releaseRecourse();
+                        break;
                     case "multicast":
                         LogUtil.print("group: ");
                         groupName = br.readLine();
