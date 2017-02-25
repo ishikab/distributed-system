@@ -50,13 +50,16 @@ public class Driver {
         String data, kind, groupName, dest;
         while (true) {
             try {
-                LogUtil.print("send/receive/multicast/exit/rules/nodes/time >>> ");
+                LogUtil.print("send/receive/multicast/exit/rules/nodes/time/request/release/status >>> ");
                 switch (br.readLine()) {
                     case "request":
                         messagePasser.requestResource();
                         break;
                     case "release":
                         messagePasser.releaseRecourse();
+                        break;
+                    case "status":
+                        messagePasser.printStatus();
                         break;
                     case "multicast":
                         LogUtil.print("group: ");
