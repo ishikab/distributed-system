@@ -37,6 +37,8 @@ public class MessagePasser implements MessageReceiveCallback {
     private MessageListenerThread listenerThread;
     private boolean block = false;
     private ArrayList<Message> multicastReceived = new ArrayList<Message>();
+    private Integer numMsgSent;
+    private Integer numMsgReceived;
 
     // variables for lab3
     private RequestState requestState = RequestState.RELEASED;
@@ -61,7 +63,8 @@ public class MessagePasser implements MessageReceiveCallback {
         multicastCoordinator.init();
         listenerThread = new MessageListenerThread(this.port, this);
         listenerThread.start();
-
+        numMsgSent = 0;
+        numMsgReceived = 0;
         // lab3
         mainGroup = Configuration.getNodeMap().get(localName).getGroups().get(0);
     }
@@ -114,6 +117,7 @@ public class MessagePasser implements MessageReceiveCallback {
         boolean duplicateMessage = false;
         seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
         message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
+        numMsgSent++;
         for (Rule rule : Configuration.getSendRules()) {
             if (rule.matches(message)) {
                 LogUtil.println("found match: " + rule);
@@ -231,6 +235,7 @@ public class MessagePasser implements MessageReceiveCallback {
         }
         if (receiveMessagesQueue.peek() == null) return null;
         while ((receiveMessagesQueue.size() > 0) && !multi && !nonMulti) {
+            numMsgReceived++;
             message = receiveMessagesQueue.poll();
             if (message instanceof GroupMessage) {
                 if (!multicastMessageWasReceived(message)) {
@@ -442,6 +447,18 @@ public class MessagePasser implements MessageReceiveCallback {
         return wasReceived;
     }
 
+    public synchronized void printStatus() {
+        System.out.println(localName + " Status of " + localName + " ::");
+        System.out.println("  Number of messages sent: " + numMsgSent.toString());
+        System.out.println("  Number of  messages received: " + numMsgReceived.toString());
+        if(this.requestState == RequestState.HELD) {
+            System.out.println("  In critical section.");
+        } else if (this.requestState == RequestState.WANTED) {
+            System.out.println("  Critical section requested.");
+        } else if (this.requestState == RequestState.RELEASED) {
+            System.out.println("  Critical section released.");
+        }
+    }
     public enum RequestState {
         WANTED, RELEASED, HELD
     }
