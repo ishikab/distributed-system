@@ -1,20 +1,16 @@
 # Lab0 Demo Yaml
 
 groups:
-    - name : g
-      members:
-         - china
-         - brazil
     - name : g1
       members:
          - america
+         - brazil
          - china
-         - denmark
     - name : g2
       members:
          - brazil
+         - china
          - denmark
-
 configuration :
   - name : logger
     ip   : localhost
@@ -22,15 +18,25 @@ configuration :
   - name : america
     ip   : localhost
     port : 12344
+    memberOf :
+        - g1
   - name : brazil
     ip   : localhost
     port : 14255
+    memberOf :
+        - g1
+        - g2
   - name : china
     ip   : localhost
     port : 12998
+    memberOf :
+        - g1
+        - g2
   - name : denmark
     ip   : localhost
     port : 1987
+    memberOf :
+        - g2
 
 sendRules :
   - action : delay 
