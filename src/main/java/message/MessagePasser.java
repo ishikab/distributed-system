@@ -83,10 +83,10 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     public void send(Message message) {
-        LogUtil.debug("trying to send " + message);
         boolean duplicateMessage = false;
         seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
         message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
+        LogUtil.debug("trying to send " + message);        
         for (Rule rule : Configuration.getSendRules()) {
             if (rule.matches(message)) {
                 LogUtil.println("found match: " + rule);
