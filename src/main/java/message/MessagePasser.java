@@ -113,10 +113,11 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     public void send(Message message) {
-        LogUtil.debug("trying to send " + message);
         boolean duplicateMessage = false;
         seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
         message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
+        LogUtil.debug("trying to send " + message);
+
         for (Rule rule : Configuration.getSendRules()) {
             if (rule.matches(message)) {
                 LogUtil.println("found match: " + rule);
@@ -332,8 +333,6 @@ public class MessagePasser implements MessageReceiveCallback {
         replyGroupMessage.setDest(message.getSrc());
         replyGroupMessage.setSrc(localName);
         directSend(replyGroupMessage);
-        System.out.println("In reply");
-        System.out.println(replyGroupMessage);
     }
 
     private void checkNodeInfo() {
@@ -418,7 +417,6 @@ public class MessagePasser implements MessageReceiveCallback {
                 recastGroupMessage.setDest(dest);
                 //seqNumMap.putIfAbsent(dest, new AtomicInteger(-1));
                 //recastGroupMessage.setSeqNum((seqNumMap.get(dest)).incrementAndGet());
-                System.out.println(recastGroupMessage);
                 this.directSend(recastGroupMessage);
             //}
         }
