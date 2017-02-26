@@ -435,7 +435,7 @@ public class MessagePasser implements MessageReceiveCallback {
             if (this.requestState == RequestState.RELEASED) {
                 this.requestState = RequestState.WANTED;
                 GroupMessage groupMessage = new GroupMessage(localName, mainGroup, null, null, Message.MessageType.REQUEST);
-                repliesCounter = new CountDownLatch(Configuration.getGroupSize(mainGroup) - 1);
+                repliesCounter = new CountDownLatch(Configuration.getGroupSize(mainGroup));
                 multicast(groupMessage);
 //                repliesCounter.await();
 //                this.requestState = RequestState.HELD;
