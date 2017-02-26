@@ -28,6 +28,17 @@ public class TimeStampedMessage extends Message {
     public TimeStampedMessage(){
         super();
     }
+    public TimeStampedMessage(TimeStampedMessage message) {
+        this.src = message.src;
+        this.dest = message.dest;
+        this.kind = message.kind;
+        this.seqNum = message.seqNum;
+        this.isDuplicate = message.isDuplicate;
+        this.data = message.data;
+        this.timeStamp = message.timeStamp;
+        this.messageType = message.messageType;
+    }
+
     @Override
     public String toString() {
         return "message.TimeStampedMessage{" +
@@ -51,5 +62,4 @@ public class TimeStampedMessage extends Message {
     protected TimeStampedMessage clone() {
        return (TimeStampedMessage) super.clone();
     }
-
 }

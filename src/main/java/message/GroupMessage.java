@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GroupMessage extends TimeStampedMessage {
     private String groupName = null;
-    private MessageType messageType = MessageType.NORMAL;
     private ConcurrentHashMap<String, AtomicInteger> groupTimeStamp = null;
 
     public GroupMessage(String src, String groupName, String kind, Object data) {
@@ -32,14 +31,6 @@ public class GroupMessage extends TimeStampedMessage {
         this.groupName = message.groupName;
         this.groupTimeStamp = message.groupTimeStamp;
         this.messageType = message.messageType;
-    }
-
-    public MessageType getMessageType() {
-        return messageType;
-    }
-
-    public void setMessageType(MessageType messageType) {
-        this.messageType = messageType;
     }
 
     public ConcurrentHashMap<String, AtomicInteger> getGroupTimeStamp() {
@@ -77,9 +68,4 @@ public class GroupMessage extends TimeStampedMessage {
    protected GroupMessage clone() {
      return (GroupMessage) super.clone();
     }
-
-    public enum MessageType {
-        NORMAL, REQUEST, RELEASE, REPLY
-    }
-
 }

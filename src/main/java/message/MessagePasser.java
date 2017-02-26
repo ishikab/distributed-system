@@ -43,7 +43,7 @@ public class MessagePasser implements MessageReceiveCallback {
     // variables for lab3
     private RequestState requestState = RequestState.RELEASED;
     private boolean voted = false;
-    private LinkedBlockingQueue<GroupMessage> requestQueue = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<Message> requestQueue = new LinkedBlockingQueue<>();
     private String mainGroup = null;
     private CountDownLatch repliesCounter = null;
 
@@ -83,7 +83,7 @@ public class MessagePasser implements MessageReceiveCallback {
             LogUtil.error("local is not in critical section");
         } else {
             this.requestState = RequestState.RELEASED;
-            GroupMessage groupMessage = new GroupMessage(localName, mainGroup, null, null, GroupMessage.MessageType.RELEASE);
+            GroupMessage groupMessage = new GroupMessage(localName, mainGroup, null, null, Message.MessageType.RELEASE);
             multicast(groupMessage);
         }
     }
@@ -117,7 +117,6 @@ public class MessagePasser implements MessageReceiveCallback {
         boolean duplicateMessage = false;
         seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
         message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
-        numMsgSent++;
         for (Rule rule : Configuration.getSendRules()) {
             if (rule.matches(message)) {
                 LogUtil.println("found match: " + rule);
@@ -153,6 +152,7 @@ public class MessagePasser implements MessageReceiveCallback {
     }
 
     private void directSend(Message message) {
+        numMsgSent++;
         Node destNode = Configuration.getNodeMap().getOrDefault(message.getDest(), null);
         if (destNode == null) {
             LogUtil.error("dest not found");
@@ -261,18 +261,21 @@ public class MessagePasser implements MessageReceiveCallback {
                 this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
         }
         if (message != null) clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
-
+        
         // handle if the message is special group message
-        if (message != null && message instanceof GroupMessage) {
-            switch (((GroupMessage) message).getMessageType()) {
+        if (message != null) {
+            switch (message.getMessageType()) {
                 case RELEASE:
                     receiveReleaseMessage();
                     break;
                 case REQUEST:
-                    receiveRequestMessage((GroupMessage) message);
+                    receiveRequestMessage((TimeStampedMessage)message);
                     break;
                 case REPLY:
                     repliesCounter.countDown();
+                    if (repliesCounter.getCount() == 0) {
+                      this.requestState = RequestState.HELD;
+                    }
                     break;
                 default:
             }
@@ -292,7 +295,7 @@ public class MessagePasser implements MessageReceiveCallback {
      *
      * @param message group message
      */
-    private void receiveRequestMessage(GroupMessage message) {
+    private void receiveRequestMessage(TimeStampedMessage message) {
         if (this.requestState == RequestState.HELD || voted) {
             requestQueue.offer(message);
         } else {
@@ -314,16 +317,23 @@ public class MessagePasser implements MessageReceiveCallback {
      */
     private void receiveReleaseMessage() {
         if (!requestQueue.isEmpty()) {
-            GroupMessage groupMessage = requestQueue.poll();
-            sendReply(groupMessage);
+            Message groupMessage = requestQueue.poll();
+            sendReply((TimeStampedMessage)groupMessage);
+            this.voted = true;
+        }
+        else {
+          voted = false;
         }
     }
 
-    private void sendReply(GroupMessage message) {
-        message.setMessageType(GroupMessage.MessageType.REPLY);
-        message.setDest(message.getSrc());
-        message.setSrc(localName);
-        directSend(message);
+    private void sendReply(TimeStampedMessage message) {
+        TimeStampedMessage replyGroupMessage = new TimeStampedMessage(message);
+        replyGroupMessage.setMessageType(Message.MessageType.REPLY);
+        replyGroupMessage.setDest(message.getSrc());
+        replyGroupMessage.setSrc(localName);
+        directSend(replyGroupMessage);
+        System.out.println("In reply");
+        System.out.println(replyGroupMessage);
     }
 
     private void checkNodeInfo() {
@@ -403,13 +413,14 @@ public class MessagePasser implements MessageReceiveCallback {
         }
         //multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
         for (String dest : group.getGroupMembers()) {
-            if (!localName.equals(groupMessage.getSrc())) {
+            //if (!localName.equals(dest)) {
                 GroupMessage recastGroupMessage = groupMessage.clone();
                 recastGroupMessage.setDest(dest);
                 //seqNumMap.putIfAbsent(dest, new AtomicInteger(-1));
                 //recastGroupMessage.setSeqNum((seqNumMap.get(dest)).incrementAndGet());
+                System.out.println(recastGroupMessage);
                 this.directSend(recastGroupMessage);
-            }
+            //}
         }
     }
 
@@ -425,7 +436,7 @@ public class MessagePasser implements MessageReceiveCallback {
         try {
             if (this.requestState == RequestState.RELEASED) {
                 this.requestState = RequestState.WANTED;
-                GroupMessage groupMessage = new GroupMessage(localName, mainGroup, null, null, GroupMessage.MessageType.REQUEST);
+                GroupMessage groupMessage = new GroupMessage(localName, mainGroup, null, null, Message.MessageType.REQUEST);
                 repliesCounter = new CountDownLatch(Configuration.getGroupSize(mainGroup) - 1);
                 multicast(groupMessage);
 //                repliesCounter.await();
@@ -440,7 +451,11 @@ public class MessagePasser implements MessageReceiveCallback {
     private boolean multicastMessageWasReceived(Message message) {
         boolean wasReceived = false;
         for (Message received : multicastReceived) {
-            if (received.isSameAs(message)) {
+        if ((message.getKind() == null || message.getKind().equalsIgnoreCase(received.getKind())) &&
+             message.getSrc().equalsIgnoreCase(received.getSrc()) &&
+             (message.getData() == null || message.getData().equals(received.getData())) &&
+             message.getDest().equals(received.getDest()) &&
+             ((GroupMessage)message).getMessageType() == ((GroupMessage)received).getMessageType() ) {
                 wasReceived = true;
             }
         }

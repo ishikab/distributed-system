@@ -10,6 +10,8 @@ public class Message implements Serializable, Cloneable {
     Integer seqNum = -1;
     Boolean isDuplicate = false;
 
+    MessageType messageType = MessageType.NORMAL;
+
     public Message(String src, String dest, String kind, Object data) {
         this.src = src;
         this.dest = dest;
@@ -46,6 +48,14 @@ public class Message implements Serializable, Cloneable {
 
     public void setSrc(String src) {
         this.src = src;
+    }
+   
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
     }
 
     public String getDest() {
@@ -129,18 +139,9 @@ public class Message implements Serializable, Cloneable {
     public void set_duplicate(Boolean dupe) {
         this.isDuplicate = dupe;
     }
-
-    public boolean isSameAs(Message message) {
-        try {
-            if (this.getKind().equalsIgnoreCase(message.getKind()) &&
-                    this.getSrc().equalsIgnoreCase(message.getSrc()) &&
-                    this.getData().equals(message.getData()) &&
-                    this.getDest().equals(message.getDest())) {
-                return true;
-            }
-            return false;
-        } catch (Exception e) {
-            return false;
-        }
+ 
+    public enum MessageType {
+        NORMAL, REQUEST, RELEASE, REPLY
     }
+
 }
