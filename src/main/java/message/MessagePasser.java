@@ -317,13 +317,9 @@ public class MessagePasser implements MessageReceiveCallback {
         }
         //multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
         for (String dest : group.getGroupMembers()) {
-            if (!localName.equals(groupMessage.getSrc())) {
-                GroupMessage recastGroupMessage = groupMessage.clone();
-                recastGroupMessage.setDest(dest);
-                //seqNumMap.putIfAbsent(dest, new AtomicInteger(-1));
-                //recastGroupMessage.setSeqNum((seqNumMap.get(dest)).incrementAndGet());
-                this.directSend(recastGroupMessage);
-            }
+            GroupMessage recastGroupMessage = groupMessage.clone();
+            recastGroupMessage.setDest(dest);
+            this.directSend(recastGroupMessage);
         }
     }
 
