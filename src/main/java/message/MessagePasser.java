@@ -130,7 +130,6 @@ public class MessagePasser implements MessageReceiveCallback {
         try {
             try (Socket socket = new Socket(destNode.getIP(), destNode.getPort())) {
                 try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
-                    LogUtil.println(message);
                     out.writeObject(message);
                     out.flush();
                 }
