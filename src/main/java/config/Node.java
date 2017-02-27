@@ -1,5 +1,6 @@
 package config;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 /**
@@ -11,13 +12,20 @@ public class Node {
     private String IP;
     private Integer port;
     private Integer nodeId;
+    private ArrayList<String> groups;
 
+    @SuppressWarnings("unchecked")
     Node(LinkedHashMap data) {
         this.name = (String) data.get("name");
         this.IP = (String) data.get("ip");
         this.port = (Integer) data.get("port");
         this.nodeId = nodeIdGenerator;
         nodeIdGenerator++;
+        this.groups = (ArrayList<String>) data.get("memberOf");
+    }
+
+    public ArrayList<String> getGroups() {
+        return groups;
     }
 
     public String getName() {
@@ -50,6 +58,6 @@ public class Node {
 
     @Override
     public String toString() {
-        return String.format("[%d][%s] %s:%d", this.nodeId, this.name, this.IP, this.port);
+        return String.format("[%d][%s] %s:%d %s", this.nodeId, this.name, this.IP, this.port, this.groups);
     }
 }

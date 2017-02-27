@@ -50,7 +50,7 @@ public class Driver {
         String data, kind, groupName, dest;
         while (true) {
             try {
-                LogUtil.print("send/receive/multicast/exit/rules/nodes/time >>> ");
+                LogUtil.print("send/receive/multicast/exit/rules/nodes/time/request/release/status >>> ");
                 switch (br.readLine()) {
                     case "request":
                         messagePasser.requestResource();
@@ -59,7 +59,7 @@ public class Driver {
                         messagePasser.releaseRecourse();
                         break;
                     case "status":
-                        messagePasser.showStatus();
+                        messagePasser.printStatus();
                         break;
                     case "multicast":
                         LogUtil.print("group: ");
@@ -84,7 +84,7 @@ public class Driver {
                         //if (message instanceof TimeStampedMessage)
                         //    iclockCoordinator.updateTime(((TimeStampedMessage) message).getTimeStamp());
                         if (message == null) LogUtil.println("No new message");
-                        else LogUtil.println(message);
+                        else LogUtil.println("received " + message);
                         break;
 
                     case "exit":

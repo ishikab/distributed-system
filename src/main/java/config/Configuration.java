@@ -27,6 +27,10 @@ public class Configuration {
         updateConfiguration();
     }
 
+    public Configuration() {
+
+    }
+
     public static ConcurrentHashMap<String, Node> getNodeMap() {
         return nodeMap;
     }
@@ -43,10 +47,6 @@ public class Configuration {
         return receiveRules;
     }
 
-    public Configuration() {
-
-    }
-
     public static Integer getNumNodes() {
         if (numNodes == null)
             LogUtil.fatalError("Read num nodes before initialization");
@@ -59,6 +59,9 @@ public class Configuration {
         return numNodes;
     }
 
+    public static Integer getGroupSize(String groupName) {
+        return groupMap.get(groupName).getGroupSize();
+    }
     @SuppressWarnings("unchecked")
     private static HashMap<String, ArrayList> readConfiguration(String config) {
         try {

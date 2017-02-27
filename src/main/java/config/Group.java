@@ -1,11 +1,10 @@
 package config;
 
-import logger.LogUtil;
+import message.Message;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import message.Message;
 /**
  * Created by wcx73 on 2017/2/14.
  */
@@ -26,6 +25,10 @@ public class Group {
    
     public HashSet<String> getGroupMembers() {
         return groupMembers;
+    }
+
+    public int getGroupSize() {
+        return groupMembers.size();
     }
     public boolean hasNodeName(String nodeName) {
         return groupMembers.contains(nodeName);
