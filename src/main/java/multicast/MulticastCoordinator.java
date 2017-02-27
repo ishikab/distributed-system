@@ -2,23 +2,32 @@ package multicast;
 
 import config.Configuration;
 import config.Group;
-import logger.LogUtil;
 import message.GroupMessage;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.ArrayList;
 
 /**
  * Created by wcx73 on 2017/2/16.
  */
 public class MulticastCoordinator {
     private static final MulticastCoordinator instance = new MulticastCoordinator();
-    private final ConcurrentHashMap<String, ConcurrentHashMap<String, AtomicInteger>> groupTimeStampMap = new ConcurrentHashMap<>();
     public final ArrayList<GroupMessage> holdBackQueue = new ArrayList<>();
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, AtomicInteger>> groupTimeStampMap = new ConcurrentHashMap<>();
+
+    public static MulticastCoordinator getInstance() {
+        return instance;
+    }
+
+    public static ConcurrentHashMap<String, AtomicInteger> getGroupTimeStampCopy(String groupName) {
+        ConcurrentHashMap<String, AtomicInteger> ret = new ConcurrentHashMap<>();
+        for (Map.Entry<String, AtomicInteger> entry : instance.getGroupTimeStampMap().get(groupName).entrySet()) {
+            ret.put(new String(entry.getKey()), new AtomicInteger(entry.getValue().get()));
+        }
+        return ret;
+    }
 
     public void init() {
         ConcurrentHashMap<String, Group> groupMap = Configuration.getGroupMap();
@@ -41,18 +50,6 @@ public class MulticastCoordinator {
         return "MulticastCoordinator{" +
                 groupTimeStampMap +
                 '}';
-    }
-
-    public static MulticastCoordinator getInstance() {
-        return instance;
-    }
-
-    public static ConcurrentHashMap<String, AtomicInteger> getGroupTimeStampCopy(String groupName) {
-        ConcurrentHashMap<String, AtomicInteger> ret = new ConcurrentHashMap<>();
-        for (Map.Entry<String, AtomicInteger> entry : instance.getGroupTimeStampMap().get(groupName).entrySet()) {
-            ret.put(new String(entry.getKey()), new AtomicInteger(entry.getValue().get()));
-        }
-        return ret;
     }
 
     public void incrementTime(String groupName, String localName) {

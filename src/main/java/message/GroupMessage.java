@@ -5,6 +5,7 @@ import multicast.MulticastCoordinator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
 public class GroupMessage extends TimeStampedMessage {
     private String groupName = null;
     private ConcurrentHashMap<String, AtomicInteger> groupTimeStamp = null;
@@ -13,8 +14,10 @@ public class GroupMessage extends TimeStampedMessage {
         super(src, null, kind, data);
         this.groupName = groupName;
     }
-    public ConcurrentHashMap<String, AtomicInteger> getGroupTimeStamp() {
-        return this.groupTimeStamp;
+
+    public GroupMessage(String src, String groupName, String kind, Object data, MessageType messageType) {
+        this(src, groupName, kind, data);
+        this.messageType = messageType;
     }
 
     public GroupMessage(GroupMessage message) {
@@ -27,7 +30,13 @@ public class GroupMessage extends TimeStampedMessage {
         this.timeStamp = message.timeStamp;
         this.groupName = message.groupName;
         this.groupTimeStamp = message.groupTimeStamp;
+        this.messageType = message.messageType;
     }
+
+    public ConcurrentHashMap<String, AtomicInteger> getGroupTimeStamp() {
+        return this.groupTimeStamp;
+    }
+
     public void setGroupTimeStamp(ConcurrentHashMap<String, AtomicInteger> hashMap) {
         this.groupTimeStamp = hashMap;
     }
@@ -52,11 +61,11 @@ public class GroupMessage extends TimeStampedMessage {
                 ", timeStamp=" + timeStamp +
                 ", groupName=" + groupName +
                 ", groupTimeStamp=" + groupTimeStamp +
+                ", type=" + messageType +
                 '}';
     }
 
    protected GroupMessage clone() {
      return (GroupMessage) super.clone();
     }
-
 }
