@@ -24,7 +24,7 @@ public class MulticastCoordinator {
     public static ConcurrentHashMap<String, AtomicInteger> getGroupTimeStampCopy(String groupName) {
         ConcurrentHashMap<String, AtomicInteger> ret = new ConcurrentHashMap<>();
         for (Map.Entry<String, AtomicInteger> entry : instance.getGroupTimeStampMap().get(groupName).entrySet()) {
-            ret.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
+            ret.put(new String(entry.getKey()), new AtomicInteger(entry.getValue().get()));
         }
         return ret;
     }
