@@ -152,6 +152,44 @@ public class MessagePasser implements MessageReceiveCallback {
 
     }
 
+    public void sendRecast(Message message) {
+        boolean duplicateMessage = false;
+        LogUtil.debug("trying to send " + message);
+
+        for (Rule rule : Configuration.getSendRules()) {
+            if (rule.matches(message)) {
+                LogUtil.println("found match: " + rule);
+                LogUtil.println(String.format("[%s] %s", rule.action, message));
+                switch (rule.action) {
+                    case DROP:
+                        return;
+                    case DROP_AFTER:
+                        if (message.getSeqNum() > rule.seqNum)
+                            return;
+                        break;
+                    case DUPLICATE:
+                        duplicateMessage = true;
+                        break;
+                    case DELAY:
+                        this.sendDelayMessageQueue.add(message);
+                        return;
+                }
+                break;
+            }
+        }
+        directSend(message);
+        if (duplicateMessage) {
+            Message clonedMessage = message.clone();
+            clonedMessage.setDuplicate(true);
+            directSend(clonedMessage);
+        }
+
+        while (sendDelayMessageQueue.peek() != null) {
+            directSend(sendDelayMessageQueue.poll());
+        }
+
+    }
+
     private void directSend(Message message) {
         numMsgSent++;
         Node destNode = Configuration.getNodeMap().getOrDefault(message.getDest(), null);
@@ -238,6 +276,11 @@ public class MessagePasser implements MessageReceiveCallback {
         while ((receiveMessagesQueue.size() > 0) && !multi && !nonMulti) {
             numMsgReceived++;
             message = receiveMessagesQueue.poll();
+            if (message != null && !this.block) {
+            while (this.receiveDelayMessageQueue.peek() != null)
+                this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
+            }
+
             if (message instanceof GroupMessage) {
                 if (!multicastMessageWasReceived(message)) {
                     multicastReceived.add(message);
@@ -257,12 +300,9 @@ public class MessagePasser implements MessageReceiveCallback {
             }
         }
 
-        if (message != null && !this.block) {
-            while (this.receiveDelayMessageQueue.peek() != null)
-                this.receiveMessagesQueue.offer(this.receiveDelayMessageQueue.poll());
+        if (message != null) {
+          clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
         }
-        if (message != null) clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
-
         // handle if the message is special group message
         if (message != null) {
             switch (message.getMessageType()) {
@@ -270,12 +310,12 @@ public class MessagePasser implements MessageReceiveCallback {
                     receiveReleaseMessage();
                     break;
                 case REQUEST:
-                    receiveRequestMessage((TimeStampedMessage) message);
+                    receiveRequestMessage((TimeStampedMessage)message);
                     break;
                 case REPLY:
                     repliesCounter.countDown();
                     if (repliesCounter.getCount() == 0) {
-                        this.requestState = RequestState.HELD;
+                      this.requestState = RequestState.HELD;
                     }
                     break;
                 default:
@@ -331,7 +371,7 @@ public class MessagePasser implements MessageReceiveCallback {
         replyGroupMessage.setMessageType(Message.MessageType.REPLY);
         replyGroupMessage.setDest(message.getSrc());
         replyGroupMessage.setSrc(localName);
-        directSend(replyGroupMessage);
+        sendRecast(replyGroupMessage);
     }
 
     private void checkNodeInfo() {
@@ -411,13 +451,9 @@ public class MessagePasser implements MessageReceiveCallback {
         }
         //multicastCoordinator.incrementTime(groupName, localName); // V_i[i] = v_i[i] + 1
         for (String dest : group.getGroupMembers()) {
-            //if (!localName.equals(dest)) {
             GroupMessage recastGroupMessage = groupMessage.clone();
             recastGroupMessage.setDest(dest);
-            //seqNumMap.putIfAbsent(dest, new AtomicInteger(-1));
-            //recastGroupMessage.setSeqNum((seqNumMap.get(dest)).incrementAndGet());
-            this.directSend(recastGroupMessage);
-            //}
+            this.sendRecast(recastGroupMessage);
         }
     }
 
@@ -427,6 +463,7 @@ public class MessagePasser implements MessageReceiveCallback {
      * multicast request to all processes in V_i
      * wait until received == K
      * state := HELD
+     *
      */
     public void requestResource() {
         try {
@@ -446,10 +483,10 @@ public class MessagePasser implements MessageReceiveCallback {
         boolean wasReceived = false;
         for (Message received : multicastReceived) {
             if ((message.getKind() == null || message.getKind().equalsIgnoreCase(received.getKind())) &&
-                    message.getSrc().equalsIgnoreCase(received.getSrc()) &&
-                    (message.getData() == null || message.getData().equals(received.getData())) &&
-                    message.getDest().equals(received.getDest()) &&
-                    message.getMessageType() == received.getMessageType()) {
+                 message.getSrc().equalsIgnoreCase(received.getSrc()) &&
+                 (message.getData() == null || message.getData().equals(received.getData())) &&
+                 message.getDest().equals(received.getDest()) &&
+                 message.getMessageType() == received.getMessageType() ) {
                 wasReceived = true;
             }
         }
@@ -462,15 +499,7 @@ public class MessagePasser implements MessageReceiveCallback {
         LogUtil.println("  num msgs rcvd: " + this.numMsgReceived);
         LogUtil.println("  request state: " + this.requestState);
         LogUtil.println("  voted: " + this.voted);
-//        if (this.requestState == RequestState.HELD) {
-//            System.out.println("  In critical section.");
-//        } else if (this.requestState == RequestState.WANTED) {
-//            System.out.println("  Critical section requested.");
-//        } else if (this.requestState == RequestState.RELEASED) {
-//            System.out.println("  Critical section released.");
-//        }
     }
-
     public enum RequestState {
         WANTED, RELEASED, HELD
     }
