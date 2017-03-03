@@ -91,6 +91,7 @@ public class Message implements Serializable, Cloneable {
                 ", data=" + data +
                 ", seqNum=" + seqNum +
                 ", isDuplicate=" + isDuplicate +
+                ", type=" + messageType +
                 '}';
     }
 

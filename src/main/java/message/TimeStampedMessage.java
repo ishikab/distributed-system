@@ -50,6 +50,7 @@ public class TimeStampedMessage extends Message {
                 ", seqNum=" + seqNum +
                 ", isDuplicate=" + isDuplicate +
                 ", timeStamp=" + timeStamp +
+                ", type=" + messageType +
                 '}';
     }
 
