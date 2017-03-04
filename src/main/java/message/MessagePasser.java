@@ -272,7 +272,7 @@ public class MessagePasser implements MessageReceiveCallback {
                 }
             }
         }
-        if (receiveMessagesQueue.peek() == null) return null;
+        if (message == null && receiveMessagesQueue.peek() == null) return null;
         while ((receiveMessagesQueue.size() > 0) && !multi && !nonMulti) {
             numMsgReceived++;
             message = receiveMessagesQueue.poll();
@@ -287,7 +287,7 @@ public class MessagePasser implements MessageReceiveCallback {
                     if (!localName.equalsIgnoreCase(message.getSrc())) {
                         this.recast((GroupMessage) message);
                     }
-                    if (multicastCoordinator.releaseGroupMessage((GroupMessage) message)) {
+                    if (!message.getSrc().equals(localName) && multicastCoordinator.releaseGroupMessage((GroupMessage) message)) {
                         multi = true;
                         multicastCoordinator.updateTime(((GroupMessage) message).getGroupName(), (GroupMessage) message);
                     } else {
@@ -302,6 +302,19 @@ public class MessagePasser implements MessageReceiveCallback {
 
         if (message != null) {
           clockService.updateTime(((TimeStampedMessage) message).getTimeStamp());
+        }
+        else
+        {
+          if (multicastCoordinator.holdBackQueue.size() > 0) {
+             for (int i = 0; i < multicastCoordinator.holdBackQueue.size(); i++) {
+                if (multicastCoordinator.holdBackQueue.get(i).getSrc().equals(localName) && 
+                    multicastCoordinator.releaseGroupMessage(multicastCoordinator.holdBackQueue.get(i)) && !multi) {
+                    message = multicastCoordinator.holdBackQueue.get(i);
+                    multicastCoordinator.holdBackQueue.remove(i);
+                    multi = true;
+                }
+            }
+          }
         }
         // handle if the message is special group message
         if (message != null) {
