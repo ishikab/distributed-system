@@ -9,84 +9,86 @@ groups:
     - name : g2
       members:
          - brazil
+         - denmark
+         - finland
+    - name : g3
+      members:
+         - china
+         - egypt
+         - finland
+    - name : g4
+      members:
+         - america
+         - denmark
+         - egypt
+    - name : g5
+      members:
+         - brazil
+         - egypt
+         - germany
+    - name : g6
+      members:
+         - america
+         - finland
+         - germany
+    - name : g7
+      members:
          - china
          - denmark
+         - germany
+
 configuration :
-  - name : logger
-    ip   : localhost
-    port : 60000
   - name : america
     ip   : localhost
     port : 12344
     memberOf :
         - g1
+        - g4
+        - g6
   - name : brazil
     ip   : localhost
     port : 14255
     memberOf :
         - g1
         - g2
+        - g5
   - name : china
     ip   : localhost
     port : 12998
     memberOf :
         - g1
-        - g2
+        - g3
+        - g7
   - name : denmark
     ip   : localhost
     port : 1987
     memberOf :
         - g2
+        - g4
+        - g7
+  - name : egypt
+    ip   : localhost
+    port : 1988
+    memberOf :
+        - g3
+        - g4
+        - g5
+  - name : finland
+    ip   : localhost
+    port : 1989
+    memberOf :
+        - g2
+        - g3
+        - g6
+  - name : germany
+    ip   : localhost
+    port : 1990
+    memberOf :
+        - g5
+        - g6
+        - g7
 
 sendRules :
-  - action : delay 
-    src    : america
-    dest   : denmark
-    kind   : black
-  - action : drop 
-    src    : brazil
-    dest   : china
-    kind   : white
-    seqNum : 3
-  - action : dropAfter 
-    kind   : black
-    src    : china
-    dest   : america
-    seqNum : 3
-  - action : drop 
-    kind   : white
-    dest   : brazil
-  - action : duplicate 
-    src    : denmark
-
-
-
-receiveRules :
-  - action : drop
-    dest   : america
-    duplicate : True
-  - action : dropAfter 
-    src    : denmark 
-    kind   : black
-    seqNum : 2 
-    duplicate : True
-    dest   : brazil
-  - action : duplicate
-    dest   : china
-    src    : denmark
-    kind   : white
-    duplicate : True
-  - action : duplicate
-    dest   : china
-    src    : denmark
-    kind   : black
-    duplicate : False
   - action : delay
-    dest   : denmark
     src    : america
     kind   : black
-  - action : dropAfter
-    kind   : black
-    seqNum : 5 
-
-
