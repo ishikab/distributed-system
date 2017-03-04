@@ -24,7 +24,7 @@ public class MulticastCoordinator {
     public static ConcurrentHashMap<String, AtomicInteger> getGroupTimeStampCopy(String groupName) {
         ConcurrentHashMap<String, AtomicInteger> ret = new ConcurrentHashMap<>();
         for (Map.Entry<String, AtomicInteger> entry : instance.getGroupTimeStampMap().get(groupName).entrySet()) {
-            ret.put(new String(entry.getKey()), new AtomicInteger(entry.getValue().get()));
+            ret.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
         }
         return ret;
     }
@@ -65,9 +65,24 @@ public class MulticastCoordinator {
         String localName = Configuration.localName;
         String groupName = null;
         ConcurrentHashMap<String, AtomicInteger> map = message.getGroupTimeStamp(); 
-        if (message.getSrc().equals(localName))
-          return true;
         boolean remove = true;
+        if (message.getSrc().equals(localName))
+        {
+          for (GroupMessage entry: holdBackQueue){
+            if (!entry.equals(message)) {
+            ConcurrentHashMap<String, AtomicInteger> maphb = entry.getGroupTimeStamp();
+            for (String nodeName: map.keySet()) {
+                if (!remove) break;
+                int hbTimeStamp = maphb.get(nodeName).getAndAdd(0);
+                int msgTimeStamp = map.get(nodeName).getAndAdd(0);
+                if (hbTimeStamp < msgTimeStamp) {
+                  remove = false;
+                }
+            }
+         }
+         }
+         return remove;
+        }
         //for (GroupMessage message: holdBackQueue){
             groupName = message.getGroupName();
             String messageSource = message.getSrc();
@@ -82,12 +97,11 @@ public class MulticastCoordinator {
                     if (localTimeStamp < remoteTimeStamp)
                         remove = false;
                 }
-            }
         //}
-        return remove;
+        } return remove;
     }
 
-   public void updateTime(String groupName, GroupMessage message) {
+  public void updateTime(String groupName, GroupMessage message) {
         // get the local and received time
         ConcurrentHashMap<String, AtomicInteger> received = message.getGroupTimeStamp();
         ConcurrentHashMap<String, AtomicInteger> local = instance.getGroupTimeStampMap().get(groupName);
@@ -96,8 +110,9 @@ public class MulticastCoordinator {
         for(Map.Entry<String, AtomicInteger> entry : local.entrySet()) {
             int localTime = entry.getValue().get();
             int receivedTime = received.get(entry.getKey()).get();
-            int newTime = Math.max(localTime, receivedTime); 
+            int newTime = Math.max(localTime, receivedTime);
             local.put(entry.getKey(), new AtomicInteger(newTime));
         }
     }
+
 }
