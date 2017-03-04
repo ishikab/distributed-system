@@ -502,6 +502,7 @@ public class MessagePasser implements MessageReceiveCallback {
                  message.getSrc().equalsIgnoreCase(received.getSrc()) &&
                  (message.getData() == null || message.getData().equals(received.getData())) &&
                  message.getDest().equals(received.getDest()) &&
+                 message.getSeqNum().equals(received.getSeqNum()) &&
                  message.getMessageType() == received.getMessageType() ) {
                 wasReceived = true;
             }
