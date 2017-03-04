@@ -14,8 +14,8 @@ groups:
     - name : g3
       members:
          - china
-         - egypt
          - finland
+         - egypt
     - name : g4
       members:
          - america
@@ -24,8 +24,8 @@ groups:
     - name : g5
       members:
          - brazil
-         - egypt
          - germany
+         - egypt
     - name : g6
       members:
          - america
@@ -90,5 +90,5 @@ configuration :
 
 sendRules :
   - action : delay
-    src    : america
-    kind   : black
+    src    : brazil
+    kind   : request
