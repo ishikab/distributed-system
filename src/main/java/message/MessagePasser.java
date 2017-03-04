@@ -350,7 +350,7 @@ public class MessagePasser implements MessageReceiveCallback {
      * @param message group message
      */
     private void receiveRequestMessage(TimeStampedMessage message) {
-        if (this.requestState == RequestState.HELD || voted) {
+        if (!message.getSrc().equals(localName) && (this.requestState == RequestState.HELD || voted)) {
             requestQueue.offer(message);
         } else {
             sendReply(message);
@@ -511,7 +511,6 @@ public class MessagePasser implements MessageReceiveCallback {
         LogUtil.println("  num msgs sent: " + this.numMsgSent);
         LogUtil.println("  num msgs rcvd: " + this.numMsgReceived);
         LogUtil.println("  request state: " + this.requestState);
-        LogUtil.println("  voted: " + this.voted);
     }
     public enum RequestState {
         WANTED, RELEASED, HELD
