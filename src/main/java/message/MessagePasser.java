@@ -116,12 +116,11 @@ public class MessagePasser implements MessageReceiveCallback {
         boolean duplicateMessage = false;
         seqNumMap.putIfAbsent(message.getDest(), new AtomicInteger(-1));
         message.setSeqNum((seqNumMap.get(message.getDest())).incrementAndGet());
-        LogUtil.debug("trying to send " + message);
 
         for (Rule rule : Configuration.getSendRules()) {
             if (rule.matches(message)) {
-                LogUtil.println("found match: " + rule);
-                LogUtil.println(String.format("[%s] %s", rule.action, message));
+                //LogUtil.println("found match: " + rule);
+                //LogUtil.println(String.format("[%s] %s", rule.action, message));
                 switch (rule.action) {
                     case DROP:
                         return;
@@ -133,8 +132,10 @@ public class MessagePasser implements MessageReceiveCallback {
                         duplicateMessage = true;
                         break;
                     case DELAY:
+                        if (message.getMessageType() == Message.MessageType.NORMAL) {
                         this.sendDelayMessageQueue.add(message);
                         return;
+                        }
                 }
                 break;
             }
@@ -154,12 +155,12 @@ public class MessagePasser implements MessageReceiveCallback {
 
     public void sendRecast(Message message) {
         boolean duplicateMessage = false;
-        LogUtil.debug("trying to send " + message);
+        //LogUtil.debug("trying to send " + message);
 
         for (Rule rule : Configuration.getSendRules()) {
             if (rule.matches(message)) {
-                LogUtil.println("found match: " + rule);
-                LogUtil.println(String.format("[%s] %s", rule.action, message));
+                //LogUtil.println("found match: " + rule);
+                //LogUtil.println(String.format("[%s] %s", rule.action, message));
                 switch (rule.action) {
                     case DROP:
                         return;
@@ -171,8 +172,10 @@ public class MessagePasser implements MessageReceiveCallback {
                         duplicateMessage = true;
                         break;
                     case DELAY:
+                        if (message.getMessageType() == Message.MessageType.NORMAL) {
                         this.sendDelayMessageQueue.add(message);
                         return;
+                        }
                 }
                 break;
             }
